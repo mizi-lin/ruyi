@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "eamodio.gitlens",
+        "kamikillerto.vscode-colorize",
+        "usernamehw.errorlens",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "oderwat.indent-rainbow",
+        "clinyong.vscode-css-modules"
+    ]
+}

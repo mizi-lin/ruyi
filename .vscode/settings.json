@@ -1,0 +1,27 @@
+{
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnPaste": false,
+    "editor.formatOnType": false,
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+    "prettier.useEditorConfig": false,
+    "prettier.useTabs": false,
+    "prettier.configPath": ".prettierrc",
+
+    "search.exclude": {
+        "**/lerna-*": true,
+        "**/yarn-*": true,
+        "**/.stylelintcache": true,
+        "**/.eslintcache": true,
+        "**/.gitignore": true,
+        "**/.nyc_output": true,
+        "**/.vscode": true,
+        "**/.history": true,
+        "**/dist": true,
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/*.code-search": true,
+        "**/yarn.lock": true
+    },
+    "typescript.tsdk": "node_modules/typescript/lib"
+}
