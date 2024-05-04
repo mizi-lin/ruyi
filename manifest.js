@@ -20,7 +20,7 @@ const manifest = {
     /**
      * Options 配置页
      */
-    options_page: 'src/pages/options/index.html',
+    // options_page: 'src/pages/options/index.html',
     background: {
         service_worker: 'src/pages/background/index.js',
         type: 'module'
@@ -29,7 +29,7 @@ const manifest = {
      * Popup
      */
     action: {
-        default_popup: 'src/pages/popup/index.html',
+        // default_popup: 'src/pages/popup/index.html',
         default_icon: 'ruyi-34.png'
     },
     /**
@@ -44,13 +44,7 @@ const manifest = {
     content_scripts: [
         {
             matches: ['http://*/*', 'https://*/*', '<all_urls>'],
-            js: ['src/pages/contentInjected/index.js'],
-            // KEY for cache invalidation
-            css: ['assets/css/contentStyle<KEY>.chunk.css']
-        },
-        {
-            matches: ['http://*/*', 'https://*/*', '<all_urls>'],
-            js: ['src/pages/contentUI/index.js']
+            js: ['src/pages/content-script/index.js']
         }
     ],
     web_accessible_resources: [

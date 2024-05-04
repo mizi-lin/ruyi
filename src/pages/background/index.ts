@@ -1,5 +1,7 @@
 import reloadOnUpdate from 'virtual:reload-on-update-in-background-script';
 import 'webextension-polyfill';
+import './action';
+import './route-windows';
 
 reloadOnUpdate('pages/background');
 

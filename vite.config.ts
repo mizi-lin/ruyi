@@ -3,7 +3,9 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path, { resolve } from 'path';
 import { getCacheInvalidationKey, getPlugins } from './utils/vite';
-
+import AutoImport from 'unplugin-auto-import/vite';
+import { antdComponents, antdIcons, reactFunctions } from './auto-imports';
+import { Constants } from './src/constants';
 const rootDir = resolve(__dirname);
 const srcDir = resolve(rootDir, 'src');
 const pagesDir = resolve(srcDir, 'pages');
@@ -12,52 +14,70 @@ const isDev = process.env.__DEV__ === 'true';
 const isProduction = !isDev;
 
 export default defineConfig({
-  resolve: {
-    alias: {
-      '@root': rootDir,
-      '@src': srcDir,
-      '@assets': resolve(srcDir, 'assets'),
-      '@pages': pagesDir,
+    resolve: {
+        alias: {
+            '@root': rootDir,
+            '@src': srcDir,
+            '@assets': resolve(srcDir, 'assets'),
+            '@pages': pagesDir
+        }
     },
-  },
-  plugins: [...getPlugins(isDev), react()],
-  publicDir: resolve(rootDir, 'public'),
-  build: {
-    outDir: resolve(rootDir, 'dist'),
-    /** Can slow down build speed. */
-    // sourcemap: isDev,
-    minify: isProduction,
-    modulePreload: false,
-    reportCompressedSize: isProduction,
-    emptyOutDir: !isDev,
-    rollupOptions: {
-      input: {
-        devtools: resolve(pagesDir, 'devtools', 'index.html'),
-        panel: resolve(pagesDir, 'panel', 'index.html'),
-        contentInjected: resolve(pagesDir, 'content', 'injected', 'index.ts'),
-        contentUI: resolve(pagesDir, 'content', 'ui', 'index.ts'),
-        background: resolve(pagesDir, 'background', 'index.ts'),
-        contentStyle: resolve(pagesDir, 'content', 'style.scss'),
-        popup: resolve(pagesDir, 'popup', 'index.html'),
-        newtab: resolve(pagesDir, 'newtab', 'index.html'),
-        options: resolve(pagesDir, 'options', 'index.html'),
-        sidepanel: resolve(pagesDir, 'sidepanel', 'index.html'),
-      },
-      output: {
-        entryFileNames: 'src/pages/[name]/index.js',
-        chunkFileNames: isDev ? 'assets/js/[name].js' : 'assets/js/[name].[hash].js',
-        assetFileNames: assetInfo => {
-          const { name } = path.parse(assetInfo.name);
-          const assetFileName = name === 'contentStyle' ? `${name}${getCacheInvalidationKey()}` : name;
-          return `assets/[ext]/${assetFileName}.chunk.[ext]`;
-        },
-      },
+    plugins: [
+        ...getPlugins(isDev),
+        react(),
+        AutoImport({
+            dts: path.resolve(__dirname, '../src/typings/auto-imports.d.ts'),
+            imports: [
+                'recoil',
+                'react-router-dom',
+                {
+                    '@ant-design/icons': antdIcons,
+                    antd: antdComponents,
+                    react: reactFunctions,
+                    dayjs: [['default', 'dayjs']],
+                    classnames: [['default', 'clx']],
+                    axios: [['default', 'axios'], 'isCancel', 'AxiosError'],
+                    localforage: [['default', 'localforage']]
+                }
+            ] as any
+        })
+    ],
+    publicDir: resolve(rootDir, 'public'),
+    build: {
+        outDir: resolve(rootDir, 'dist'),
+        /** Can slow down build speed. */
+        // sourcemap: isDev,
+        minify: isProduction,
+        modulePreload: false,
+        reportCompressedSize: isProduction,
+        emptyOutDir: !isDev,
+        rollupOptions: {
+            input: {
+                app: resolve(pagesDir, 'app', 'index.html'),
+                background: resolve(pagesDir, 'background', 'index.ts'),
+                popup: resolve(pagesDir, 'popup', 'index.html'),
+                'content-script': resolve(pagesDir, 'content-script', 'index.ts')
+            },
+            output: {
+                entryFileNames: 'src/pages/[name]/index.js',
+                chunkFileNames: isDev ? 'assets/js/[name].js' : 'assets/js/[name].[hash].js',
+                assetFileNames: (assetInfo) => {
+                    const { name } = path.parse(assetInfo.name);
+                    const assetFileName = name === 'contentStyle' ? `${name}${getCacheInvalidationKey()}` : name;
+                    return `assets/[ext]/${assetFileName}.chunk.[ext]`;
+                }
+            }
+        }
     },
-  },
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    include: ['**/*.test.ts', '**/*.test.tsx'],
-    setupFiles: './test-utils/vitest.setup.js',
-  },
+    css: {
+        // 指定传递给 CSS 预处理器的选项; 文件扩展名用作选项的键
+        preprocessorOptions: {
+            less: {
+                javascriptEnabled: true,
+                modifyVars: {
+                    '@primary-color': Constants.PRIAMRY_COLOR
+                }
+            }
+        }
+    }
 });
