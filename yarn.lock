@@ -2389,6 +2389,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"batch-processor@npm:1.0.0":
+  version: 1.0.0
+  resolution: "batch-processor@npm:1.0.0"
+  checksum: 10/59452655203eeb94101770a4c31a3aa81a60f6403ef4e66870f2970f0873ebc795c442610aa420be34535f1e51d644a12f0c5a37fb3bde08bf5c00109ee67d97
+  languageName: node
+  linkType: hard
+
 "binary-extensions@npm:^2.0.0":
   version: 2.3.0
   resolution: "binary-extensions@npm:2.3.0"
@@ -2860,6 +2867,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"create-react-class@npm:^15.6.2":
+  version: 15.7.0
+  resolution: "create-react-class@npm:15.7.0"
+  dependencies:
+    loose-envify: "npm:^1.3.1"
+    object-assign: "npm:^4.1.1"
+  checksum: 10/e845cb275c6b59c1fc4c4037e3d5caf4f42a258ef21f5cd9c86cd7ef476f933998f5c363a9e4b36970f682c30b122637d41474742abc85d8b931aef8041da8a3
+  languageName: node
+  linkType: hard
+
 "cross-env@npm:7.0.3":
   version: 7.0.3
   resolution: "cross-env@npm:7.0.3"
@@ -3065,6 +3082,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"desandro-matches-selector@npm:^2.0.0":
+  version: 2.0.2
+  resolution: "desandro-matches-selector@npm:2.0.2"
+  checksum: 10/d7d211ab037587d5aebfce39d1b3e794029a83197dabe7f3ef01b0445446b08bcc97ac2c59dd361f2e857ccce52d493114ee1573e8dc604762c9322708f1b54d
+  languageName: node
+  linkType: hard
+
 "diff-sequences@npm:^29.6.3":
   version: 29.6.3
   resolution: "diff-sequences@npm:29.6.3"
@@ -3127,6 +3151,15 @@ __metadata:
   version: 1.4.754
   resolution: "electron-to-chromium@npm:1.4.754"
   checksum: 10/06ea4d7a771f61f1d31651b1e4f965128e1df7f9fa23b55282accad23c65bc13122095b089ad68a0e01ce0c60b1193bb7a35e50ea759151278edc27dbab78816
+  languageName: node
+  linkType: hard
+
+"element-resize-detector@npm:^1.1.9":
+  version: 1.2.4
+  resolution: "element-resize-detector@npm:1.2.4"
+  dependencies:
+    batch-processor: "npm:1.0.0"
+  checksum: 10/05870970ce5dedec85f9401c2b9c3c4fe0483da72158eb8eea9e6f130b8eb954e1832be3b05216f617f7947c13a61bff9568824e753f70269c8fa1ca44b6613b
   languageName: node
   linkType: hard
 
@@ -3783,6 +3816,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ev-emitter@npm:^1.0.0":
+  version: 1.1.1
+  resolution: "ev-emitter@npm:1.1.1"
+  checksum: 10/a6c9767f8a70512a4e211b6d78406bcbae7950d778ce8dd90bb64e9d7fb16878dd598a042e9a2b53dc769175db7d9da0b8e4b8d570482d67936975dcc5419ca0
+  languageName: node
+  linkType: hard
+
 "eventemitter3@npm:^5.0.1":
   version: 5.0.1
   resolution: "eventemitter3@npm:5.0.1"
@@ -3924,6 +3964,15 @@ __metadata:
     path-exists: "npm:^5.0.0"
     unicorn-magic: "npm:^0.1.0"
   checksum: 10/7e6b08fbc05a10677e25e74bb0a020054a86b31d1806c5e6a9e32e75472bbf177210bc16e5f97453be8bda7ae2e3d97669dbb2901f8c30b39ce53929cbea6746
+  languageName: node
+  linkType: hard
+
+"fizzy-ui-utils@npm:^2.0.0":
+  version: 2.0.7
+  resolution: "fizzy-ui-utils@npm:2.0.7"
+  dependencies:
+    desandro-matches-selector: "npm:^2.0.0"
+  checksum: 10/00262e74a429450e7e958330bb65f0403335d50ff104e881628ba6d4bad13f92888559df3cd4e479b0b5b0da3218e762fdc0a40dbce1adb32991d765e25d2936
   languageName: node
   linkType: hard
 
@@ -4105,6 +4154,13 @@ __metadata:
     has-symbols: "npm:^1.0.3"
     hasown: "npm:^2.0.0"
   checksum: 10/85bbf4b234c3940edf8a41f4ecbd4e25ce78e5e6ad4e24ca2f77037d983b9ef943fd72f00f3ee97a49ec622a506b67db49c36246150377efcda1c9eb03e5f06d
+  languageName: node
+  linkType: hard
+
+"get-size@npm:^2.0.2":
+  version: 2.0.3
+  resolution: "get-size@npm:2.0.3"
+  checksum: 10/268530ea41a2217c5aa7bc750259a5db8c8cbf50036cc6e33bb3bca82f9333f2facc8788d1bd943f1ca69f51109226919209592a0b8c9206eebe89ca12d69285
   languageName: node
   linkType: hard
 
@@ -4415,6 +4471,15 @@ __metadata:
   bin:
     image-size: bin/image-size.js
   checksum: 10/f41ec6cfccfa6471980e83568033a66ec53f84d1bcb70033e946a7db9c1b6bbf5645ec90fa5a8bdcdc84d86af0032014eff6fa078a60c2398dfce6676c46bdb7
+  languageName: node
+  linkType: hard
+
+"imagesloaded@npm:^4.0.0":
+  version: 4.1.4
+  resolution: "imagesloaded@npm:4.1.4"
+  dependencies:
+    ev-emitter: "npm:^1.0.0"
+  checksum: 10/37cd05442e5f66c3cc0a5e011beccd2028f5ddb2d1c65406b2be9d1c4d0eeb2e6fe253474982ddedbdda06dee25a92f70c2d43d2a441c4554605417b01637bec
   languageName: node
   linkType: hard
 
@@ -5377,6 +5442,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lodash@npm:^4.17.4":
+  version: 4.17.21
+  resolution: "lodash@npm:4.17.21"
+  checksum: 10/c08619c038846ea6ac754abd6dd29d2568aa705feb69339e836dfa8d8b09abbb2f859371e86863eda41848221f9af43714491467b5b0299122431e202bb0c532
+  languageName: node
+  linkType: hard
+
 "log-update@npm:^6.0.0":
   version: 6.0.0
   resolution: "log-update@npm:6.0.0"
@@ -5390,7 +5462,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loose-envify@npm:^1.0.0, loose-envify@npm:^1.1.0, loose-envify@npm:^1.4.0":
+"loose-envify@npm:^1.0.0, loose-envify@npm:^1.1.0, loose-envify@npm:^1.3.1, loose-envify@npm:^1.4.0":
   version: 1.4.0
   resolution: "loose-envify@npm:1.4.0"
   dependencies:
@@ -5480,6 +5552,16 @@ __metadata:
     promise-retry: "npm:^2.0.1"
     ssri: "npm:^10.0.0"
   checksum: 10/11bae5ad6ac59b654dbd854f30782f9de052186c429dfce308eda42374528185a100ee40ac9ffdc36a2b6c821ecaba43913e4730a12f06f15e895ea9cb23fa59
+  languageName: node
+  linkType: hard
+
+"masonry-layout@npm:^4.2.0":
+  version: 4.2.2
+  resolution: "masonry-layout@npm:4.2.2"
+  dependencies:
+    get-size: "npm:^2.0.2"
+    outlayer: "npm:^2.1.0"
+  checksum: 10/7ab8817fe2d647537aba4407a95c2d37ff70d720d1ac4ece11101b4d8b64513da2a23aa5f5d779df12936457c6571f6721ce08a4a322522ff86b4b1df1cb6fe1
   languageName: node
   linkType: hard
 
@@ -5993,6 +6075,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"outlayer@npm:^2.1.0":
+  version: 2.1.1
+  resolution: "outlayer@npm:2.1.1"
+  dependencies:
+    ev-emitter: "npm:^1.0.0"
+    fizzy-ui-utils: "npm:^2.0.0"
+    get-size: "npm:^2.0.2"
+  checksum: 10/15a819257f042a1cd01a3a33f7e1d6489183eb1a5467e8688b27b5641393fa755fe77e36b47159ad9d4c1e165c04b94222e3c65f635113efbdafda432a4de41c
+  languageName: node
+  linkType: hard
+
 "p-limit@npm:^2.2.0":
   version: 2.3.0
   resolution: "p-limit@npm:2.3.0"
@@ -6370,7 +6463,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
+"prop-types@npm:^15.5.8, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -7065,6 +7158,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-masonry-component@npm:^6.3.0":
+  version: 6.3.0
+  resolution: "react-masonry-component@npm:6.3.0"
+  dependencies:
+    create-react-class: "npm:^15.6.2"
+    element-resize-detector: "npm:^1.1.9"
+    imagesloaded: "npm:^4.0.0"
+    lodash: "npm:^4.17.4"
+    masonry-layout: "npm:^4.2.0"
+    prop-types: "npm:^15.5.8"
+  peerDependencies:
+    react: ^0.14.0 || ^15.0.0-0 || ^16.0.0-0 || ^17.0.0
+  checksum: 10/9f2f36cecb770c783d8ece7e76a14cc6b52acb344c595b48b991932cc4fc390d4e64e59324ae782ceca97faddb4c9c178a121f851ae5e1fdb09d36334e6c39ba
+  languageName: node
+  linkType: hard
+
 "react-merge-refs@npm:^1.1.0":
   version: 1.1.0
   resolution: "react-merge-refs@npm:1.1.0"
@@ -7514,6 +7623,7 @@ __metadata:
     react-dom: "npm:18.3.1"
     react-error-boundary: "npm:4.0.13"
     react-helmet-async: "npm:2.0.4"
+    react-masonry-component: "npm:^6.3.0"
     react-router: "npm:6.23.0"
     react-router-dom: "npm:6.23.0"
     recoil: "npm:0.7.7"

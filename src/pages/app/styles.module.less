@@ -54,26 +54,49 @@
 }
 
 .windows {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-
-    > section {
+    .columns {
         width: calc(25% - 44px);
-        gap: 8px;
+        gap: 4px;
         display: flex;
-        flex-wrap: wrap;
-        flex-direction: row;
+        flex-direction: column;
         padding: 16px;
+        margin-bottom: 16px;
         background: #fff;
         border-radius: 8px;
 
-        // & > div {
-        //     &:hover {
-        //         transform: scale(1.3) rotate(30deg);
-        //         transform-origin: center center;
-        //         transition: all 0.3s;
-        //     }
-        // }
+        .group {
+            position: relative;
+            &::before {
+                position: absolute;
+                content: '';
+                left: -10px;
+                top: -4px;
+                bottom: -4px;
+                width: 100px;
+                border-left: 1px solid @primary-color;
+            }
+        }
+
+        & > div {
+            padding: 4px;
+            border-radius: 6px;
+
+            &:hover {
+                background: rgba(@primary-color, 0.1);
+                transition: all 0.3s;
+            }
+
+            .item {
+                display: flex;
+                gap: 8px;
+                align-items: center;
+
+                & > span {
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    overflow: hidden;
+                }
+            }
+        }
     }
 }
