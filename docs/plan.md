@@ -81,7 +81,20 @@ ruyi 将提供该功能，pined tab 永远会在固定在当前活跃的window�
 -   使用 local.storage.sync 存储数据，可以同步到其他设备
 -   构建服务，存储数据到服务器，记录人生的所有历史记录（这点可以所收费项目，或创业）-> v3
 
+### 页面预览功能
+
 ```
+网页快照
+https://webcache.googleusercontent.com/search?q=cache:https://segmentfault.com/a/1190000021814265
+
 可以根据网页时光机访问历史记录
 https://web.archive.org/web/20060701000000*/http://news.sina.com.cn/c/2003-01-30/1030893251.shtml
 ```
+
+
+## 问题集 
+
+### 浏览器重启，恢复打开页面，会更换windowId，这样会造成当前历史数据重复
+
+- 需要过滤掉恢复窗口的数据
+- 并且同步该窗口下所有的历史数据
