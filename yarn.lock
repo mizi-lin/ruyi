@@ -1466,12 +1466,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:20.12.8":
+"@types/node@npm:*":
   version: 20.12.8
   resolution: "@types/node@npm:20.12.8"
   dependencies:
     undici-types: "npm:~5.26.4"
   checksum: 10/1feab4c8cb08588eea10811ed4d02485a5cde47fdf92e7b3193fc9f8ee39ea556f6e3124dc6d5378354466ed5f7e5fbe5e20f625908de40ea37560368a50f72c
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:20.12.10":
+  version: 20.12.10
+  resolution: "@types/node@npm:20.12.10"
+  dependencies:
+    undici-types: "npm:~5.26.4"
+  checksum: 10/b3ab044969880084e4da22a0173fc234239de81c22fb9418bd992de98369a3065c0c6119216476711af69ff520331cf06711acdeb1959554de6bbf0912a0494e
   languageName: node
   linkType: hard
 
@@ -2995,7 +3004,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dayjs@npm:^1.11.10, dayjs@npm:^1.11.11":
+"dayjs@npm:1.11.11, dayjs@npm:^1.11.10":
   version: 1.11.11
   resolution: "dayjs@npm:1.11.11"
   checksum: 10/f03948b172fbeed229837965988d1d5bac99c72a31c28731a457303259439f2f36289186489ae140adbeb10f591a926908c8de5d81eb449a2edbf5cbd6e9e30c
@@ -5336,7 +5345,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"localforage@npm:^1.10.0":
+"localforage@npm:1.10.0":
   version: 1.10.0
   resolution: "localforage@npm:1.10.0"
   dependencies:
@@ -7580,7 +7589,7 @@ __metadata:
     "@testing-library/react": "npm:15.0.6"
     "@types/chrome": "npm:0.0.267"
     "@types/lodash-es": "npm:^4.17.12"
-    "@types/node": "npm:20.12.8"
+    "@types/node": "npm:20.12.10"
     "@types/react": "npm:18.3.1"
     "@types/react-beautiful-dnd": "npm:^13.1.8"
     "@types/react-dom": "npm:18.3.0"
@@ -7595,7 +7604,7 @@ __metadata:
     click-to-react-component: "npm:1.1.0"
     construct-style-sheets-polyfill: "npm:3.1.0"
     cross-env: "npm:7.0.3"
-    dayjs: "npm:^1.11.11"
+    dayjs: "npm:1.11.11"
     echarts: "npm:5.5.0"
     eslint: "npm:9.1.1"
     eslint-config-airbnb-typescript: "npm:18.0.0"
@@ -7612,7 +7621,7 @@ __metadata:
     less: "npm:4.2.0"
     less-loader: "npm:12.2.0"
     lint-staged: "npm:15.2.2"
-    localforage: "npm:^1.10.0"
+    localforage: "npm:1.10.0"
     lodash-es: "npm:4.17.21"
     magic-string: "npm:0.30.10"
     npm-run-all: "npm:4.1.5"
