@@ -98,7 +98,7 @@ export const TabItem = ({ tab, windowId, active, current }) => {
             placement="right"
             overlayStyle={{ maxWidth: 400, wordBreak: 'break-word' }}
         >
-            <div className={clx(styles.item, { [styles.search]: isSearch })} onClick={() => openTab({ windowId, tab })}>
+            <div className={clx(styles.item, { [styles.search]: isSearch })} onClick={() => openTab({ active, windowId, tab })}>
                 <HolderOutlined />
                 <Avatar src={tab?.favIconUrl || nonFavicon} icon={nonFavicon} size={24} />
                 <span style={{ flex: 1 }}>{tab?.title?.substring?.(0, 30)}</span>
@@ -110,7 +110,6 @@ export const TabItem = ({ tab, windowId, active, current }) => {
 export const DraggableItem = ({ tab, inx, window }) => {
     const search = useRecoilValue(windowSearchAtom);
     const onlyMatched = useRecoilValue(windowSettingAtom(WindowSetting.onlyShowMatched));
-    console.log('onlyMatched', onlyMatched, search, !tabMatcher(tab, search));
     if (onlyMatched && search && !tabMatcher(tab, search)) return <></>;
     return (
         <Draggable key={tab?.id} draggableId={`${tab?.id}`} index={inx}>

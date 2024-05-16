@@ -1,7 +1,7 @@
-import { DB, GetMap, RemoveMap, RemoveSet, TabDB, UpdateSet, WindowDB } from '@root/src/db';
+import { DB, GetMap, TabDB } from '@root/src/db';
 import { updateURLWithHistory, updateURLWithTab } from '@root/src/shared/bus/urls';
-import { updateCurrentWindowId, updateWindow } from '@root/src/shared/bus/windows';
-import { getTabsWithoutEmpty, updateTab } from '@root/src/shared/bus';
+import { updateWindow } from '@root/src/shared/bus/windows';
+import { getTabsWithoutEmpty } from '@root/src/shared/bus';
 
 /**
  * 安装或更新时触发
@@ -28,3 +28,11 @@ chrome.runtime.onInstalled.addListener(async (...args) => {
     // @todo
     // handlerNoStoreURL();
 });
+
+/**
+ * 当浏览器重启或遇到以外的时候
+ * 会关闭所有的窗口然后重启
+ * 这样会额外的造就许多重复的历史窗口
+ * 所以这里需要清理这种情况
+ */
+chrome.runtime.onRestartRequired.addListener(() => {});

@@ -1,4 +1,4 @@
-import { DB, GetMap, WindowDB } from '@root/src/db';
+import { DB, GetMap, WindowDB, GetSet } from '@root/src/db';
 import { groupBy } from 'lodash-es';
 import { getTabsWithoutEmpty } from './tabs';
 
@@ -41,4 +41,18 @@ export const updateWindow = async () => {
 export async function updateCurrentWindowId() {
     const current = await chrome.windows.getCurrent();
     await WindowDB.setItem(DB.WindowDB.CurrentId, current.id);
+}
+
+/**
+ * 当浏览器重启或遇到以外的时候
+ * 会关闭所有的窗口然后重启
+ * 这样会额外的造就许多重复的历史窗口
+ * 所以这里需要清理这种情况
+ */
+export async function cleanupDuplicateHistoryWindows() {
+    const actives = await GetSet(WindowDB, DB.WindowDB.ActiveWindowsSet);
+    const histories = await GetSet(WindowDB, DB.WindowDB.AllWindowTabsMap);
+
+    for await (const windowId of [...actives]) {
+    }
 }

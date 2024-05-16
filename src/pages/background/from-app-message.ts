@@ -57,10 +57,16 @@ const funcMap = {
     /**
      * 打开网页
      */
-    openTab: async ({ windowId, tab, incognito = false }) => {
+    openTab: async ({ windowId, tab, active, incognito = false }) => {
         // 新建窗口打开
         if (!windowId) {
             return await chrome.windows.create({ url: tab.url, incognito });
+        }
+
+        // 原窗口打开
+        if (active && windowId === tab.windowId) {
+            await chrome.windows.update(windowId, { focused: true });
+            return await chrome.tabs.update(tab.id, { active: true, highlighted: true });
         }
 
         // 在当前窗口打开
@@ -133,8 +139,6 @@ const funcMap = {
      * - 历史窗户，新建窗户，恢复URLs
      */
     openWindow: async ({ windowId: sourceWindowId, active, tabs: oldTabs = [], type = 'deleteSource' }) => {
-        console.log(sourceWindowId, active, oldTabs, type);
-
         if (active && sourceWindowId) {
             return await chrome.windows.update(sourceWindowId, { focused: true });
         }
