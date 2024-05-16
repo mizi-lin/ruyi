@@ -25,7 +25,7 @@
     },
     "type": "module",
     "dependencies": {
-        "@ant-design/icons": "5.3.6",
+        "@ant-design/icons": "5.3.7",
         "add": "^2.0.6",
         "antd": "^5.17.0",
         "axios": "^1.6.8",
