@@ -87,6 +87,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@antfu/utils@npm:^0.7.8":
+  version: 0.7.8
+  resolution: "@antfu/utils@npm:0.7.8"
+  checksum: 10/9efffb78a9683add047b0e2be96a059c3a29baee1565a2d127500bc433def25a0375c1e84c9479cbb3f1dcec797b2c1f0a24e5d85c830ea64f9a8a6a6ca5b9c3
+  languageName: node
+  linkType: hard
+
 "@babel/cli@npm:^7.23.9":
   version: 7.24.5
   resolution: "@babel/cli@npm:7.24.5"
@@ -7462,7 +7469,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"magic-string@npm:0.30.10, magic-string@npm:^0.30.5":
+"magic-string@npm:0.30.10, magic-string@npm:^0.30.10, magic-string@npm:^0.30.5":
   version: 0.30.10
   resolution: "magic-string@npm:0.30.10"
   dependencies:
@@ -9818,7 +9825,7 @@ __metadata:
     ts-loader: "npm:9.5.1"
     tslib: "npm:2.6.2"
     typescript: "npm:5.4.5"
-    unplugin-auto-import: "npm:^0.17.5"
+    unplugin-auto-import: "npm:^0.17.6"
     unplugin-auto-import-antd: "npm:^0.0.2"
     vite: "npm:5.2.11"
     vite-bundle-analyzer: "npm:^0.9.4"
@@ -11040,7 +11047,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unplugin@npm:^1.5.1, unplugin@npm:^1.6.0":
+"unplugin-auto-import@npm:^0.17.6":
+  version: 0.17.6
+  resolution: "unplugin-auto-import@npm:0.17.6"
+  dependencies:
+    "@antfu/utils": "npm:^0.7.8"
+    "@rollup/pluginutils": "npm:^5.1.0"
+    fast-glob: "npm:^3.3.2"
+    local-pkg: "npm:^0.5.0"
+    magic-string: "npm:^0.30.10"
+    minimatch: "npm:^9.0.4"
+    unimport: "npm:^3.7.1"
+    unplugin: "npm:^1.10.1"
+  peerDependencies:
+    "@nuxt/kit": ^3.2.2
+    "@vueuse/core": "*"
+  peerDependenciesMeta:
+    "@nuxt/kit":
+      optional: true
+    "@vueuse/core":
+      optional: true
+  checksum: 10/ad938236c1826f6ccf944161d7e716c994e3d1cdb84f40ea7df4df260fa591081829973d7f50a22274cfed4f38b08a4aa03b456ff51bdeefac36ab65a294af1c
+  languageName: node
+  linkType: hard
+
+"unplugin@npm:^1.10.1, unplugin@npm:^1.5.1, unplugin@npm:^1.6.0":
   version: 1.10.1
   resolution: "unplugin@npm:1.10.1"
   dependencies:
