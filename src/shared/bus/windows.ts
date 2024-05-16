@@ -1,4 +1,4 @@
-import { DB, GetMap, WindowDB, GetSet } from '@root/src/db';
+import { DB, GetMap, WindowDB, GetSet, TabDB, RemoveMap } from '@root/src/db';
 import { groupBy } from 'lodash-es';
 import { getTabsWithoutEmpty } from './tabs';
 
@@ -51,8 +51,27 @@ export async function updateCurrentWindowId() {
  */
 export async function cleanupDuplicateHistoryWindows() {
     const actives = await GetSet(WindowDB, DB.WindowDB.ActiveWindowsSet);
-    const histories = await GetSet(WindowDB, DB.WindowDB.AllWindowTabsMap);
+    const historiesMap = await GetMap(WindowDB, DB.WindowDB.AllWindowTabsMap);
+    const tabMap = await GetMap(TabDB, DB.TabDB.TabsMap);
+    const histories = Array.from(historiesMap);
+    const uniqMap = new Map();
+    const uniqWindowIds = [];
+    for (const [windowId, tabIds] of histories) {
+        const urlkey = [...tabIds]
+            .map((id) => tabMap.get(id)?.url)
+            .sort()
+            .join(',');
+        if (uniqMap.has(urlkey)) {
+            uniqWindowIds.push(actives.has(windowId) ? uniqMap.get(urlkey) : windowId);
+            uniqMap.set(urlkey, actives.has(windowId) ? windowId : uniqMap.get(urlkey));
+        } else {
+            uniqMap.set(urlkey, windowId);
+        }
+    }
 
-    for await (const windowId of [...actives]) {
+    if (uniqWindowIds?.length) {
+        for await (const windowId of uniqWindowIds) {
+            await RemoveMap(WindowDB, DB.WindowDB.AllWindowTabsMap, windowId);
+        }
     }
 }

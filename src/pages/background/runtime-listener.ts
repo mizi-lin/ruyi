@@ -1,6 +1,6 @@
 import { DB, GetMap, TabDB } from '@root/src/db';
 import { updateURLWithHistory, updateURLWithTab } from '@root/src/shared/bus/urls';
-import { updateWindow } from '@root/src/shared/bus/windows';
+import { cleanupDuplicateHistoryWindows, updateWindow } from '@root/src/shared/bus/windows';
 import { getTabsWithoutEmpty } from '@root/src/shared/bus';
 
 /**
@@ -24,6 +24,9 @@ chrome.runtime.onInstalled.addListener(async (...args) => {
     // 更新Windows相关信息
     await updateWindow();
 
+    // 清除重复的窗口记录
+    await cleanupDuplicateHistoryWindows();
+
     // 读取未标记记录的URL信息
     // @todo
     // handlerNoStoreURL();
@@ -35,4 +38,6 @@ chrome.runtime.onInstalled.addListener(async (...args) => {
  * 这样会额外的造就许多重复的历史窗口
  * 所以这里需要清理这种情况
  */
-chrome.runtime.onRestartRequired.addListener(() => {});
+chrome.runtime.onRestartRequired.addListener(async () => {
+    await cleanupDuplicateHistoryWindows();
+});
