@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
 import { analyzer } from 'vite-bundle-analyzer';
 import path, { resolve } from 'path';
 import { getCacheInvalidationKey, getPlugins } from './utils/vite';
@@ -26,6 +27,7 @@ export default defineConfig({
     plugins: [
         ...getPlugins(isDev),
         react(),
+        svgr(),
         // analyzer(),
         // viteCompression({
         //     threshold: 50000 // 50kb

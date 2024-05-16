@@ -35,6 +35,7 @@ chrome.windows.onRemoved.addListener(async (windowId) => {
 chrome.windows.onFocusChanged.addListener(
     async (windowId) => {
         windowId > 0 && (await WindowDB.setItem(DB.WindowDB.CurrentId, windowId));
+        await sendMsgToApp(MsgKey.DataReload);
     },
     { windowTypes: ['normal'] }
 );

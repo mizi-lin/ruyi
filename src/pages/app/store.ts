@@ -1,4 +1,4 @@
-import { LocalforageKey, SearchTemp, SettingTemp } from '@root/src/constants';
+import { LocalforageKey, SearchTemp } from '@root/src/constants';
 import { DB, GetMap, UrlDB } from '@root/src/db';
 import { countHistory, historyMockWindow } from '@root/src/shared/bus';
 import { toCountMap, toMap } from '@root/src/shared/utils';
@@ -12,18 +12,6 @@ import { atomFamily } from 'recoil';
 export const searchTemp = atomFamily({
     key: 'ruyi/search',
     default: ''
-});
-
-export const settingTemp = atomFamily({
-    key: 'ruyi/global/setting',
-    default: (key: SettingTemp) => {
-        const settingMap = {
-            [SettingTemp.showHistoryWindow]: true,
-            [SettingTemp.showCurrentWindow]: true,
-            [SettingTemp.showTopHistory]: true
-        };
-        return settingMap[key];
-    }
 });
 
 // -----> end global

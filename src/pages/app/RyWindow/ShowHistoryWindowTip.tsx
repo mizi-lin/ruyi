@@ -1,8 +1,8 @@
-import { SettingTemp } from '@root/src/constants';
-import { settingTemp } from '../store';
+import { WindowSetting } from '@root/src/constants';
+import { windowSettingAtom } from './store';
 
 const ShowHistoryWindowTip = () => {
-    const showHistoryWindow = useRecoilValue(settingTemp(SettingTemp.showHistoryWindow));
+    const showHistoryWindow = useRecoilValue(windowSettingAtom(WindowSetting.showHistoryWindow));
     return (
         <>
             {showHistoryWindow && (

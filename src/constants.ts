@@ -34,8 +34,9 @@ export enum SearchTemp {
     history = 'search.history'
 }
 
-export enum SettingTemp {
-    showHistoryWindow = 'setting.showHistoryWindow',
-    showCurrentWindow = 'setting.showCurrentWindow',
-    showTopHistory = 'setting.showTopHistory'
+export enum WindowSetting {
+    showHistoryWindow = 'window.setting.showHistoryWindow',
+    showCurrentWindow = 'window.setting.showCurrentWindow',
+    showTopHistory = 'window.setting.showTopHistory',
+    onlyShowMatched = 'window.setting.onlyShowMatched'
 }

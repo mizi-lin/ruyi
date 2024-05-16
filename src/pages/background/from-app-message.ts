@@ -1,6 +1,6 @@
-import { DB, ExtendMap, GetMap, GetSet, RemoveMap, TabDB, UpdateMap, WindowDB, dbGetTabsByWindowId } from '@root/src/db';
-import { getTabsWithoutEmpty, updateTabs } from '@root/src/shared/bus';
+import { DB, GetMap, GetSet, RemoveMap, RemoveSet, TabDB, UpdateMap, WindowDB } from '@root/src/db';
 import { insertSet, toMap } from '@root/src/shared/utils';
+import { groupBy } from 'lodash-es';
 
 export async function existTab(tabId) {
     try {
@@ -23,6 +23,34 @@ export async function isActiveWindowById(windowId) {
     console.log('isActivechrome.windows.getAll', activeWindows, +new Date() - next);
 
     return activeWindows.has(windowId);
+}
+
+export async function removeVariousTabs({ tabs }) {
+    const windowTabs = groupBy(tabs, 'windowId');
+    const activeWindows = await GetSet(WindowDB, DB.WindowDB.ActiveWindowsSet);
+
+    // 先从窗口映射中删除对应的标签页
+    for await (const [winId, tabs] of Object.entries(windowTabs)) {
+        // lodash groupBy 返回的key为字符串，需要转回数字
+        const windowId = +winId;
+        const isActive = activeWindows.has(windowId);
+        const tabIds = tabs.map((tab) => tab.id);
+        const wtmap = await GetMap(WindowDB, DB.WindowDB.AllWindowTabsMap);
+        if (!wtmap) return;
+        const sourceSet = wtmap.get(+windowId);
+
+        for await (const tabId of tabIds) {
+            isActive && (await chrome.tabs.remove(tabId));
+            sourceSet.delete(tabId);
+        }
+
+        if (!sourceSet.size) {
+            await RemoveMap(WindowDB, DB.WindowDB.AllWindowTabsMap, windowId);
+            await RemoveSet(WindowDB, DB.WindowDB.ActiveWindowsSet, windowId);
+        } else {
+            await UpdateMap(WindowDB, DB.WindowDB.AllWindowTabsMap, windowId, sourceSet);
+        }
+    }
 }
 
 const funcMap = {
@@ -80,6 +108,9 @@ const funcMap = {
         }
     },
 
+    /**
+     * 删除特定视窗下的标签页
+     */
     removeTab: async ({ windowId, tab, active }) => {
         // 删除 tab
         if (active) {
@@ -92,29 +123,37 @@ const funcMap = {
     },
 
     /**
+     * 删除任意来源的标签页
+     */
+    removeVariousTabs,
+
+    /**
      * 打开窗口
      * - 活跃的窗口，直接打开
      * - 历史窗户，新建窗户，恢复URLs
      */
-    openWindow: async ({ windowId, active, tabs: oldTabs }) => {
-        if (active) {
-            return await chrome.windows.update(windowId, { focused: true });
+    openWindow: async ({ windowId: sourceWindowId, active, tabs: oldTabs = [], type = 'deleteSource' }) => {
+        console.log(sourceWindowId, active, oldTabs, type);
+
+        if (active && sourceWindowId) {
+            return await chrome.windows.update(sourceWindowId, { focused: true });
         }
 
         // 根据windowId 获取 tabs
         const urls = oldTabs.map((tab) => tab?.url).filter(Boolean);
 
         // 将urls创建改为
-        const window = await chrome.windows.create({ url: urls, incognito: false });
+        await chrome.windows.create({ url: urls, incognito: false });
 
         // 删除历史记录
-        await RemoveMap(WindowDB, DB.WindowDB.AllWindowTabsMap, windowId);
+        sourceWindowId && (await RemoveMap(WindowDB, DB.WindowDB.AllWindowTabsMap, sourceWindowId));
 
         // 不能使用 isEmptyTab 判断，这个时候，tab 为padding 状态， url 等信息尚未完全填充
         const { tabs } = await chrome.windows.getCurrent({ populate: true });
 
         const oldMap = toMap(oldTabs, 'url');
 
+        // 因移动的标签，新建标签库
         for await (const tab of tabs) {
             await UpdateMap(TabDB, DB.TabDB.TabsMap, tab.id, async () => {
                 const { url, pendingUrl } = tab;
@@ -132,8 +171,11 @@ const funcMap = {
             });
         }
 
-        for await (const tab of oldTabs) {
-            await RemoveMap(TabDB, DB.TabDB.TabsMap, tab.id);
+        /**
+         * 同步更新视窗信息
+         */
+        if (type === 'deleteSource') {
+            await removeVariousTabs({ tabs: oldTabs });
         }
     },
 
@@ -142,7 +184,7 @@ const funcMap = {
      */
     removeWindow: async ({ windowId, active }) => {
         if (active) {
-            // todo 验证 windowId 是否为活跃状态
+            // @todo 验证 windowId 是否为活跃状态
             return await chrome.windows.remove(windowId);
         }
         await RemoveMap(WindowDB, DB.WindowDB.AllWindowTabsMap, windowId);
