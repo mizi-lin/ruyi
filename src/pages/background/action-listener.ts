@@ -1,8 +1,8 @@
+import { DB, UpdateMap, WindowDB } from '@root/src/db';
 import { getAppUrl } from './utils/bus';
 
 const { create, move, update } = chrome.tabs;
 chrome.action.onClicked.addListener(async (tab) => {
-    console.log(tab);
     const { windowId } = tab;
     const appURL = getAppUrl();
 
@@ -22,4 +22,6 @@ chrome.action.onClicked.addListener(async (tab) => {
         // 激活
         await update(appTab.id, { highlighted: true, active: true, pinned: true });
     }
+
+    await WindowDB.setItem(DB.WindowDB.CurrentId, windowId);
 });

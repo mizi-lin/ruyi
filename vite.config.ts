@@ -1,6 +1,7 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { analyzer } from 'vite-bundle-analyzer';
 import path, { resolve } from 'path';
 import { getCacheInvalidationKey, getPlugins } from './utils/vite';
 import AutoImport from 'unplugin-auto-import/vite';
@@ -25,6 +26,10 @@ export default defineConfig({
     plugins: [
         ...getPlugins(isDev),
         react(),
+        // analyzer(),
+        // viteCompression({
+        //     threshold: 50000 // 50kb
+        // }),
         AutoImport({
             dts: path.resolve(__dirname, '../src/typings/auto-imports.d.ts'),
             imports: [
@@ -46,10 +51,11 @@ export default defineConfig({
     build: {
         outDir: resolve(rootDir, 'dist'),
         /** Can slow down build speed. */
-        // sourcemap: isDev,
+        sourcemap: true,
         minify: isProduction,
         modulePreload: false,
         reportCompressedSize: isProduction,
+        // reportCompressedSize: true,
         emptyOutDir: !isDev,
         rollupOptions: {
             input: {
@@ -66,6 +72,12 @@ export default defineConfig({
                     const assetFileName = name === 'contentStyle' ? `${name}${getCacheInvalidationKey()}` : name;
                     return `assets/[ext]/${assetFileName}.chunk.[ext]`;
                 }
+                // manualChunks: (id) => {
+                //     if (id.includes('node_modules')) {
+                //         const arr = id.toString().split('node_modules/')[1].split('/');
+                //         return arr[0];
+                //     }
+                // }
             }
         }
     },

@@ -15,7 +15,19 @@ const manifest = {
     name: '__MSG_extensionName__',
     version: packageJson.version,
     description: '__MSG_extensionDescription__',
-    permissions: ['identity', 'activeTab', 'storage', 'unlimitedStorage', 'downloads', 'tabs', 'tabCapture', 'scripting', 'contextMenus'],
+    permissions: [
+        'identity',
+        'activeTab',
+        'storage',
+        'unlimitedStorage',
+        'downloads',
+        'tabs',
+        'tabCapture',
+        'tabGroups',
+        'history',
+        'scripting',
+        'contextMenus'
+    ],
     optional_permissions: ['offscreen', 'desktopCapture', 'alarms'],
     /**
      * Options 配置页

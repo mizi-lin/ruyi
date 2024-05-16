@@ -1,10 +1,9 @@
-
 export {};
 declare global {
     type FC<P = {}> = import('react').FC<P>;
     type PropsWithChildren = import('react').PropsWithChildren;
     type CSSProperties = import('react').CSSProperties;
-    type ReactNode = import('react').ReactNode;   
+    type ReactNode = import('react').ReactNode;
     type ChangeEvent<T> = import('react').ChangeEvent<T>;
     type RecoilValue<T> = import('recoil').RecoilValue<T>;
     // The Recoil types for `selectorFamily` have a bug in which they do not
@@ -27,9 +26,10 @@ declare global {
         [Property in keyof Type]: Type[Property] extends import('recoil').SerializableParam
             ? Type[Property]
             : Type[Property] extends Record<string, any> | undefined | null
-            ? CreateSerializableParam<Type[Property]>
-            : Type[Property];
+              ? CreateSerializableParam<Type[Property]>
+              : Type[Property];
     };
+
+    type Row = Record<string, any>;
+    type Rows = Rows;
 }
-
-

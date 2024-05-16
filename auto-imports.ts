@@ -806,7 +806,7 @@ export const antdComponents = [
     'Collapse',
     'Color',
     'Config',
-    'Date',
+    ['Date', 'AntdDate'],
     'Descriptions',
     'Divider',
     'Drawer',

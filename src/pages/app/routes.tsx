@@ -1,12 +1,12 @@
-import { RyWindows } from './RyWindows';
-import { Layout } from './layout';
 export const routes = [
     {
         path: '/',
-        element: <Layout />,
+        lazy: () => import('./Layout'),
         children: [
             { path: '/', element: <Navigate to="/windows" replace /> },
-            { path: '/windows', element: <RyWindows />, index: true }
+            { path: '/windows', lazy: () => import('./RyWindow'), index: true },
+            { path: '/history', lazy: () => import('./RyHistory') }
         ]
     }
+    // { path: '/loading', element: <RyLoading /> }
 ];

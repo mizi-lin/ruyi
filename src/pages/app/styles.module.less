@@ -4,6 +4,16 @@
         margin: 0;
         line-height: 1.5;
         overflow: hidden;
+        background: #f4f6f8;
+    }
+
+    .ruyi-title {
+        font-size: 18px;
+    }
+
+    .ruyi-description {
+        font-size: 14px;
+        color: #999;
     }
 }
 
@@ -21,14 +31,16 @@
         padding: 0 16px;
         height: 48px;
         border-bottom: 1px solid #e8e8e8;
-
+        background: #fff;
         > .logo {
             padding-left: 50px;
             width: 200px;
             font-size: 24px;
             font-weight: 500;
             line-height: 38px;
-            color: @primary-color;
+
+            background: url('chrome-extension://__MSG_@@extension_id__/ruyi-32.png') no-repeat left center;
+            color: #1296db;
         }
     }
 
@@ -40,9 +52,38 @@
         overflow-y: auto;
 
         .aside {
-            width: 250px;
-            border-right: 1px solid #e8e8e8;
+            padding-top: 8px;
+            max-width: 250px;
+            border-right: 1px solid #f0f0f0;
             background: #fff;
+
+            :global {
+                .ant-menu-vertical {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 8px;
+                    border-inline-end-color: transparent;
+                }
+                .ant-menu-inline-collapsed {
+                    width: 56px;
+                }
+                .ant-menu-item {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 0;
+                    margin: 0;
+                    width: 44px;
+                    height: 44px;
+                    line-height: unset;
+                    border-radius: 50%;
+                }
+                .anticon {
+                    font-size: 20px;
+                }
+            }
         }
 
         .contents {
@@ -54,83 +95,19 @@
     }
 }
 
-.windows {
-    .searchToolbar {
-        display: flex;
-        justify-content: space-between;
-        padding-bottom: 16px;
-    }
+.loading {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 60vh;
+    overflow: hidden;
+    font-size: 16px;
 
-    .columns {
-        width: calc(25% - 44px);
-        gap: 4px;
-        display: flex;
-        flex-direction: column;
-        padding: 16px 16px 32px;
-        margin-bottom: 16px;
-        background: #f0f0f0;
-        border-radius: 8px;
-
-        &.active {
-            background: #fff;
-            box-shadow:
-                rgba(50, 50, 93, 0.05) 0px 6px 12px -2px,
-                rgba(0, 0, 0, 0.1) 0px 3px 7px -3px;
-        }
-
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-            padding: 0 0 4px;
-        }
-
-        .group {
-            position: relative;
-            &::before {
-                position: absolute;
-                content: '';
-                left: -10px;
-                top: -4px;
-                bottom: -4px;
-                width: 100px;
-                border-left: 1px solid @primary-color;
-            }
-        }
-
-        & > .tabs {
-            padding: 4px;
-            border-radius: 6px;
-
-            &:hover {
-                background: rgba(@primary-color, 0.1);
-                transition: all 0.3s;
-            }
-
-            .item {
-                display: flex;
-                gap: 8px;
-                align-items: center;
-
-                & > span {
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                    overflow: hidden;
-                }
-
-                &.search {
-                    position: relative;
-                    &::after {
-                        position: absolute;
-                        content: '';
-                        left: -6px;
-                        top: -4px;
-                        bottom: -4px;
-                        right: -4px;
-                        background: rgba(#fff566, 0.3);
-                        border-radius: 8px;
-                    }
-                }
-            }
-        }
+    .logo {
+        width: 100%;
+        height: 160px;
+        background: url('chrome-extension://__MSG_@@extension_id__/ruyi-128.png') no-repeat center center;
     }
 }

@@ -1,9 +1,12 @@
 import reloadOnUpdate from 'virtual:reload-on-update-in-background-script';
 import 'webextension-polyfill';
-import './init';
-import './action';
+import './runtime-listener';
+import './windows-listener';
+import './tabs-listener';
+import './action-listener';
+import './history-listener';
 import './route-windows';
-import './windows';
+import './from-app-message';
 
 reloadOnUpdate('pages/background');
 

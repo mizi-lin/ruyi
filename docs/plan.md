@@ -83,6 +83,10 @@ ruyi 将提供该功能，pined tab 永远会在固定在当前活跃的window�
 
 ### 页面预览功能
 
+### 全局功能
+- 隐藏符合规则的URL
+- localhost, IP, baidu/google, chrome-xxx 等
+
 ```
 网页快照
 https://webcache.googleusercontent.com/search?q=cache:https://segmentfault.com/a/1190000021814265

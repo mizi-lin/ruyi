@@ -1,14 +1,18 @@
 import styles from './styles.module.less';
+
 const items = [
-    { label: 'Windows', key: '/windows', icon: <BlockOutlined /> },
-    { label: 'Group', key: '/groups', icon: <GroupOutlined /> }
+    { label: 'Windows 视窗', key: '/windows', icon: <BlockOutlined /> },
+    { label: 'Group 组', key: '/groups', icon: <GroupOutlined /> },
+    { label: 'History 访问记录', key: '/history', icon: <UnorderedListOutlined /> }
 ];
-export const Layout: FC = () => {
+
+const Layout: FC = () => {
     const { pathname } = useLocation();
+    const navigate = useNavigate();
     return (
         <article className={styles.layout}>
             <header className={styles.header}>
-                <div className={styles.logo} style={{ background: `url(${chrome.runtime.getURL('ruyi-32.png')}) no-repeat left center` }}>
+                <div className={styles.logo}>
                     <Space>
                         <span style={{ fontSize: 14 }}>Ruyi</span>
                         <span>如意</span>
@@ -18,7 +22,7 @@ export const Layout: FC = () => {
             </header>
             <main className={styles.main}>
                 <section className={styles.aside}>
-                    <Menu selectedKeys={[pathname]} mode="inline" items={items} />
+                    <Menu selectedKeys={[pathname]} inlineCollapsed={true} mode="inline" items={items} onClick={(e) => navigate(e.key)} />
                 </section>
                 <section className={styles.contents}>
                     <Outlet />
@@ -27,3 +31,5 @@ export const Layout: FC = () => {
         </article>
     );
 };
+
+export const Component = memo(Layout, () => true);
