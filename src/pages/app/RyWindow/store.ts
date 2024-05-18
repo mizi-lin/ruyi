@@ -156,6 +156,9 @@ export const useMoveTab = () => {
     });
 };
 
+/**
+ * 打开窗口
+ */
 export const useOpenWindow = () => {
     return useRecoilCallback(({ snapshot, refresh }) => async (windowInfo) => {
         await chrome.runtime.sendMessage({
@@ -166,6 +169,9 @@ export const useOpenWindow = () => {
     });
 };
 
+/**
+ * 打开标签页
+ */
 export const useOpenTab = () => {
     return useRecoilCallback(({ snapshot, refresh }) => async (options) => {
         await chrome.runtime.sendMessage({
@@ -176,6 +182,9 @@ export const useOpenTab = () => {
     });
 };
 
+/**
+ * 删除标签页
+ */
 export const useRemoveTab = () => {
     return useRecoilCallback(({ snapshot, refresh }) => async (options) => {
         await chrome.runtime.sendMessage({
@@ -186,6 +195,9 @@ export const useRemoveTab = () => {
     });
 };
 
+/**
+ * 固定标签页
+ */
 export const usePinnedTab = () => {
     return useRecoilCallback(({ snapshot, refresh }) => async (options) => {
         await chrome.runtime.sendMessage({
@@ -216,6 +228,9 @@ export const useOpenMatchedTabToNewWindow = () => {
     });
 };
 
+/**
+ * 删除标签页集合
+ */
 export const useRemoveVariousTabs = () => {
     return useRecoilCallback(({ snapshot, reset, refresh }) => async () => {
         const matched = await snapshot.getPromise(windowsMatchedStore);

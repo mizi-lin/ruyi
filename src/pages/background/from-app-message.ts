@@ -1,3 +1,4 @@
+import { getAppUrl } from './utils/bus';
 import { DB, GetMap, GetSet, RemoveMap, RemoveSet, TabDB, UpdateMap, WindowDB } from '@root/src/db';
 import { groupBy, insertSet, toMap } from '@root/src/shared/utils';
 
@@ -14,16 +15,14 @@ export async function existTab(tabId) {
  * 判断 window 是否活跃
  */
 export async function isActiveWindowById(windowId) {
-    const now = +new Date();
-    const winddows = await chrome.windows.getAll();
-    const next = +new Date();
-    console.log('isActivechrome.windows.getAll', winddows, +new Date() - now);
     const activeWindows = await GetSet(WindowDB, DB.WindowDB.ActiveWindowsSet);
-    console.log('isActivechrome.windows.getAll', activeWindows, +new Date() - next);
-
     return activeWindows.has(windowId);
 }
 
+/**
+ * 删除任意来源的标签页
+ * - 搜索结果标签页
+ */
 export async function removeVariousTabs({ tabs }) {
     const windowTabs = groupBy<chrome.tabs.Tab>(tabs, 'windowId');
     const activeWindows = await GetSet(WindowDB, DB.WindowDB.ActiveWindowsSet);
@@ -52,6 +51,9 @@ export async function removeVariousTabs({ tabs }) {
     }
 }
 
+/**
+ * 移除标签页
+ */
 export async function removeTab({ windowId, tab, active }) {
     // 删除 tab
     if (active) {
@@ -63,12 +65,52 @@ export async function removeTab({ windowId, tab, active }) {
     });
 }
 
+/**
+ * 固定标签页
+ */
 export async function pinnedTab({ tab, active }) {
     console.log('pinnedTab', tab, active);
     return active
         ? await chrome.tabs.update(tab.id, { pinned: !tab.pinned })
         : await chrome.tabs.create({ url: tab.url, pinned: !tab.pinned, windowId: chrome.windows.WINDOW_ID_CURRENT });
 }
+
+/**
+ * 打开app.html
+ */
+
+/**
+ * 异步打开应用程序的特定页面。
+ * 该函数首先尝试在当前窗口查找已打开的应用页面，如果不存在，则创建一个新标签页。
+ * 如果页面已打开但在不同窗口中，则将其移动到当前窗口并激活。
+ *
+ * @returns {Promise<void>} 不返回任何内容。
+ */
+export async function openApp() {
+    // 获取应用的URL
+    const url = getAppUrl();
+    // 尝试在当前窗口查找已打开的对应应用页面
+    const [tab] = await chrome.tabs.query({ url });
+
+    // 如果应用页面未打开，则创建一个新标签页
+    if (!tab) {
+        return await chrome.tabs.create({ url, windowId: chrome.windows.WINDOW_ID_CURRENT, index: 0, active: true, pinned: true });
+    }
+
+    // 获取当前窗口信息
+    const window = await chrome.windows.getCurrent();
+
+    // 如果应用页面不在当前窗口，则将其移动到当前窗口
+    if (window.id !== tab.windowId) {
+        await chrome.tabs.move(tab.id, { windowId: window.id, index: 0 });
+    }
+
+    // 激活并高亮已打开的应用页面
+    await chrome.tabs.update(tab.id, { active: true, highlighted: true, pinned: true });
+}
+
+// 打开搜索引擎
+export async function openSearchEngines() {}
 
 const funcMap = {
     /**
@@ -203,7 +245,9 @@ const funcMap = {
             return await chrome.windows.remove(windowId);
         }
         await RemoveMap(WindowDB, DB.WindowDB.AllWindowTabsMap, windowId);
-    }
+    },
+
+    openApp
 };
 
 chrome.runtime.onMessage.addListener(async (request, render, sendResponse) => {

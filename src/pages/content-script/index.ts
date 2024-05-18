@@ -1,15 +1,33 @@
-import { send } from 'vite';
+/**
+ * 快捷键监控
+ */
+let lastKey = '';
+let lastKeyTime = 0;
+document.body.addEventListener('keydown', (event) => {
+    const key = event.key.toLowerCase();
+    const time = new Date().getTime();
 
-console.log('ruyi content script done');
-// chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-//     if (request.type === 'parseHTML') {
-//         console.log('request.type', request, sender);
-//         const parser = new DOMParser();
-//         const doc = parser.parseFromString(request.options, 'text/html');
-//         const title = doc.querySelector('title').textContent;
-//         const favIconUrl = doc.querySelector('head link[rel*="icon"]')?.href;
-//         const body = doc.querySelector('body').textContent;
-//         console.dir(doc.querySelector('body'));
-//         sendResponse({ title, body, favIconUrl });
-//     }
-// });
+    // 如果用户正在输入，不执行后续的代码
+    const activeElement = document.activeElement;
+    if (
+        activeElement &&
+        (activeElement.tagName.toUpperCase() === 'INPUT' ||
+            activeElement.tagName.toUpperCase() === 'TEXTAREA' ||
+            (activeElement as HTMLTextAreaElement).isContentEditable!)
+    ) {
+        return;
+    }
+
+    // 打开如意 App
+    if (key === 'r' && lastKey === 'r' && time - lastKeyTime < 1000) {
+        chrome.runtime.sendMessage({ type: 'openApp' });
+    }
+
+    // 打开搜索引擎
+    if (key === 'y' && lastKey === 'y' && time - lastKeyTime < 1000) {
+        chrome.runtime.sendMessage({ type: 'openSearchEngines' });
+    }
+
+    lastKey = key;
+    lastKeyTime = time;
+});
