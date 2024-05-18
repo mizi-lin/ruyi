@@ -1,21 +1,25 @@
-import { DB, GetMap, GetSet, TabDB, WindowDB } from '@root/src/db';
+import { faviconURL, getFaviconUrl } from '@root/src/shared/bus';
+import { DB, GetMap, GetSet, SettingDB, SettingDBKeys, TabDB, UrlDB, WindowDB } from '@root/src/db';
 import { orderBy } from 'lodash-es';
-import { reloadStore } from '../store';
+import { reloadStore, topHistoryStore } from '../store';
 import { WindowSetting } from '@root/src/constants';
 import { atomFamily } from 'recoil';
 import { toMap } from '@root/src/shared/utils';
+import { asyncMap } from '@root/src/shared/utils/common';
 
 export const windowSettingAtom = atomFamily({
     key: 'ruyi/windows/setting',
-    default: (key: WindowSetting) => {
-        const settingMap = {
-            [WindowSetting.showHistoryWindow]: true,
-            [WindowSetting.showCurrentWindow]: true,
-            [WindowSetting.showTopHistory]: true,
-            [WindowSetting.onlyShowMatched]: false
-        };
-        return settingMap[key];
-    }
+    default: async (key: SettingDBKeys) => {
+        const value = await SettingDB.getItem(key);
+        return value;
+    },
+    effects: (key) => [
+        ({ onSet }) => {
+            onSet(async (value) => {
+                await SettingDB.setItem(key, value);
+            });
+        }
+    ]
 });
 
 export const windowSearchAtom = atom({
@@ -27,6 +31,12 @@ export const windowsStore = selector({
     key: 'ruyi/windows',
     get: async ({ get }) => {
         get(reloadStore);
+
+        const { topOrigins, topPages, topUrls } = get(topHistoryStore);
+        const showHistoryWindows = get(windowSettingAtom(SettingDBKeys.TabsShowHistoryWindows));
+        const showActiveWindows = get(windowSettingAtom(SettingDBKeys.TabsShowActiveWindows));
+        const showTopViewer = get(windowSettingAtom(SettingDBKeys.TabsShowTopViewer));
+
         // 所有窗口信息
         const all = await GetMap(WindowDB, DB.WindowDB.AllWindowTabsMap);
         // 当前活跃的窗口
@@ -43,14 +53,34 @@ export const windowsStore = selector({
                 });
                 const active = actives.has(windowId);
                 const current = windowId === currentWindowId;
-                return { windowId, tabs, active, current };
+
+                if (!showHistoryWindows && !active) return void 0;
+                if (!showActiveWindows && active) return void 0;
+
+                return { windowId, tabs, active, current, title: current ? 'Current Window' : '' };
             })
             .filter(Boolean);
 
         // 按照状态进行排序
         windows = orderBy(windows, ['topHistory', 'current', 'active'], ['desc', 'desc', 'desc']);
 
-        return { data: windows };
+        if (showTopViewer) {
+            windows = [topUrls, topPages, topOrigins, ...windows];
+        }
+
+        windows = windows.filter(({ tabs }) => !!tabs.length);
+
+        const data = await asyncMap(windows, async ({ tabs, ...rest }) => {
+            return {
+                ...rest,
+                tabs: await asyncMap(tabs, async (tab) => {
+                    const favIconUrl = await getFaviconUrl(tab);
+                    return { ...tab, favIconUrl };
+                })
+            };
+        });
+
+        return { data };
     }
 });
 
@@ -62,7 +92,7 @@ export const searchByWindowsStore = selector({
     key: 'ruyi/searchByWindowsStore',
     get: async ({ get }) => {
         const search = get(windowSearchAtom);
-        const onlyMatched = get(windowSettingAtom(WindowSetting.onlyShowMatched));
+        const onlyMatched = get(windowSettingAtom(SettingDBKeys.TabsOnlyMatched));
         const { data } = get(windowsStore);
 
         if (onlyMatched && search) {
@@ -150,6 +180,16 @@ export const useRemoveTab = () => {
     return useRecoilCallback(({ snapshot, refresh }) => async (options) => {
         await chrome.runtime.sendMessage({
             type: 'removeTab',
+            options
+        });
+        refresh(windowsStore);
+    });
+};
+
+export const usePinnedTab = () => {
+    return useRecoilCallback(({ snapshot, refresh }) => async (options) => {
+        await chrome.runtime.sendMessage({
+            type: 'pinnedTab',
             options
         });
         refresh(windowsStore);

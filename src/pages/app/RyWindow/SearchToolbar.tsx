@@ -2,13 +2,14 @@ import { WindowSetting, WindowState } from '@root/src/constants';
 import styles from './styles.module.less';
 import { useOpenMatchedTabToNewWindow, useOpenWindow, useRemoveVariousTabs, windowSettingAtom } from './store';
 import { windowSearchAtom, windowsMatchedStore } from './store';
+import { DB, SettingDBKeys } from '@root/src/db';
 
 const SearchToolbar = () => {
     const [search, setSearch] = useRecoilState(windowSearchAtom);
-    const [showHistory, setShowHistory] = useRecoilState(windowSettingAtom(WindowSetting.showHistoryWindow));
-    const [showCurrentWindow, setCurrentWindow] = useRecoilState(windowSettingAtom(WindowSetting.showCurrentWindow));
-    const [showTopHistory, setTopHistory] = useRecoilState(windowSettingAtom(WindowSetting.showTopHistory));
-    const [onlyShowMatched, setOnlyShowMatched] = useRecoilState(windowSettingAtom(WindowSetting.onlyShowMatched));
+    const [showHistory, setShowHistory] = useRecoilStateLoadable(windowSettingAtom(SettingDBKeys.TabsShowHistoryWindows));
+    const [showActiveWindows, setActiveWindows] = useRecoilStateLoadable(windowSettingAtom(SettingDBKeys.TabsShowActiveWindows));
+    const [showTopHistory, setTopHistory] = useRecoilStateLoadable(windowSettingAtom(SettingDBKeys.TabsShowTopViewer));
+    const [onlyShowMatched, setOnlyShowMatched] = useRecoilStateLoadable(windowSettingAtom(SettingDBKeys.TabsOnlyMatched));
     const { contents: matched } = useRecoilValueLoadable(windowsMatchedStore);
 
     const openMatchedTabs = useOpenMatchedTabToNewWindow();
@@ -19,6 +20,9 @@ const SearchToolbar = () => {
         <section className={styles.searchToolbar}>
             <div>
                 <Space>
+                    <Tooltip title={'新建窗口'}>
+                        <Button type="primary" shape={'circle'} icon={<PlusOutlined />} onClick={() => openWindow({})} />
+                    </Tooltip>
                     <Input
                         allowClear
                         placeholder="web URL / title"
@@ -49,16 +53,13 @@ const SearchToolbar = () => {
             <div>
                 <Space>
                     <span>Only Matched</span>
-                    <Switch value={onlyShowMatched} onChange={setOnlyShowMatched} />
+                    <Switch value={onlyShowMatched?.contents} onChange={setOnlyShowMatched} />
                     <span>Top History</span>
-                    <Switch value={showTopHistory} onChange={setTopHistory} />
-                    <span>当前窗口</span>
-                    <Switch value={showCurrentWindow} onChange={setCurrentWindow} />
+                    <Switch value={showTopHistory?.contents} onChange={setTopHistory} />
+                    <span>活跃窗口</span>
+                    <Switch value={showActiveWindows?.contents} onChange={setActiveWindows} />
                     <span>历史窗口</span>
-                    <Switch value={showHistory} onChange={setShowHistory} />
-                    <Tooltip title={'新建窗口'}>
-                        <Button type="primary" shape={'circle'} icon={<PlusOutlined />} onClick={() => openWindow({})} />
-                    </Tooltip>
+                    <Switch value={showHistory?.contents} onChange={setShowHistory} />
                 </Space>
             </div>
         </section>

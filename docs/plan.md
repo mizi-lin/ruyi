@@ -95,6 +95,28 @@ https://webcache.googleusercontent.com/search?q=cache:https://segmentfault.com/a
 https://web.archive.org/web/20060701000000*/http://news.sina.com.cn/c/2003-01-30/1030893251.shtml
 ```
 
+## 全局pinned
+
+将一个网页作为全局pinned
+
+## 网页预览
+
+可以点击在任何网页的链接，预览网页
+
+## 选择模式
+
+可以选择 tab 新建或删除
+
+## 可以配置黑名单
+
+## one tab 模式
+
+
+## 桌面移动化
+
+![alt text](image.png)
+![alt text](image-1.png)
+
 
 ## 问题集 
 

@@ -1,8 +1,7 @@
 /**
  * 跟历史记录相关的业务方法
  */
-
-import { get, orderBy, sortBy } from 'lodash-es';
+import { get, orderBy } from 'lodash-es';
 
 /**
  * 根据历史记录统计计数
@@ -30,12 +29,12 @@ export function countHistory(
 /**
  * 将history的数据伪装成window entries格式
  */
-export function historyMockWindow(histories: Rows, mockWindowId) {
+export function historyMockWindow(histories: Rows, mockWindowId, title) {
     const data = histories.map((item) => {
         // @todo 有tab库里匹配
         const { url, visitCount, title } = item;
         return { url, visitCount, title, id: Math.random() };
     });
 
-    return [mockWindowId, data];
+    return { windowId: mockWindowId, tabs: data, active: false, current: false, topHistory: true, title };
 }

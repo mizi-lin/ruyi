@@ -18,15 +18,16 @@ const manifest = {
     permissions: [
         'identity',
         'activeTab',
+        'commands',
         'storage',
         'unlimitedStorage',
         'downloads',
         'tabs',
-        'tabCapture',
         'tabGroups',
         'history',
         'scripting',
-        'contextMenus'
+        'contextMenus',
+        'favicon'
     ],
     optional_permissions: ['offscreen', 'desktopCapture', 'alarms'],
     /**
@@ -50,6 +51,21 @@ const manifest = {
     // chrome_url_overrides: {
     //     newtab: 'src/pages/newtab/index.html'
     // },
+
+    commands: {
+        'open-search': {
+            suggested_key: {
+                default: 'Alt+Y'
+            },
+            description: 'open search'
+        },
+        _execute_action: {
+            suggested_key: {
+                default: 'Alt+R'
+            }
+        }
+    },
+
     icons: {
         128: 'ruyi-128.png'
     },

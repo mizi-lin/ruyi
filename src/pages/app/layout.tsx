@@ -1,9 +1,13 @@
 import styles from './styles.module.less';
+import TabGroupSvg from './assets/tabs.svg?react';
+import BookmarksSvg from './assets/bookmarks.svg?react';
+import HistorySvg from './assets/history.svg?react';
 
 const items = [
     { label: 'Windows 视窗', key: '/windows', icon: <BlockOutlined /> },
-    { label: 'Group 组', key: '/groups', icon: <GroupOutlined /> },
-    { label: 'History 访问记录', key: '/history', icon: <UnorderedListOutlined /> }
+    { label: 'Tab Groups 标签组', key: '/tabgroups', icon: <TabGroupSvg width={'1em'} height={'1em'} /> },
+    { label: 'Bookmarks 书签', key: '/bookmarks', icon: <BookmarksSvg width={'1em'} height={'1em'} /> },
+    { label: 'History 访问记录', key: '/history', icon: <HistorySvg width={'1.3em'} height={'1.3em'} /> }
 ];
 
 const Layout: FC = () => {

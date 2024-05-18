@@ -1,5 +1,6 @@
 import { isEmpty } from 'lodash-es';
 import { isEmptyTab } from './shared/bus/tabs';
+import ShowHistoryWindowTip from './pages/app/RyWindow/ShowHistoryWindowTip';
 
 // 存储URL相关信息
 export const UrlDB = localforage.createInstance({ name: 'ruyi-urls' });
@@ -9,6 +10,11 @@ export const TabDB = localforage.createInstance({ name: 'ruyi-tabs' });
 export const WindowDB = localforage.createInstance({ name: 'ruyi-windows' });
 // 存储group相关信息
 export const GroupDB = localforage.createInstance({ name: 'ruyi-groups' });
+// 配置相关
+export const SettingDB = localforage.createInstance({ name: 'ruyi-setting' });
+
+// 存储域名域favicon的信息
+export const DomainFaviconDB = localforage.createInstance({ name: 'ruyi-domain-favicon' });
 
 export async function GetMap(db, storeKey, defaultMap?: Map<any, any>): Promise<Map<any, any>> {
     return (await db.getItem(storeKey)) || (defaultMap ?? new Map());
@@ -19,7 +25,7 @@ export async function GetMap(db, storeKey, defaultMap?: Map<any, any>): Promise<
  */
 export async function ExtendMap(db, sourceKey, targetMap, updater?) {
     const sourceMap = await GetMap(db, sourceKey);
-    for await (const [key, target] of Object.entries(targetMap)) {
+    for await (const [key, target] of [...targetMap.entries()]) {
         const source = sourceMap.get(key) ?? {};
         const target$ = (await updater?.(key, { source, target, sourceMap, targetMap })) ?? target;
         sourceMap.set(key, { ...source, ...target$ });
@@ -63,7 +69,6 @@ export async function GetSet(db, storeKey): Promise<Set<any>> {
 
 export async function UpdateSet(db, storeKey, value) {
     const set = await GetSet(db, storeKey);
-    console.log('---->> set', set, storeKey, value, db);
     // 修正set顺序
     set.delete(value);
     set.add(value);
@@ -86,7 +91,9 @@ export const DB = {
         // 未处理的URL数据
         NoSignURLsSet: 'ruyi.urldb.no_sign_urls_set',
         // 历史记录
-        HistoriesMap: 'ruyi.urldb.histories_map'
+        HistoriesMap: 'ruyi.urldb.histories_map',
+        // URLFaviconMap
+        URLOriginFaviconMap: 'ruyi.urldb.url_origin_favicon_map'
     },
     TabDB: {
         // 浏览器Tab记录，只记录最后一次打开的URL
@@ -111,6 +118,17 @@ export const DB = {
         TagsMap: 'ruyi.tagdb.tags_map'
     }
 };
+
+export enum SettingDBKeys {
+    // tabs 搜索结果只显示匹配到的结果
+    TabsOnlyMatched = 'ruyi.tabs.only.matched',
+    // tabs 显示活跃的窗口
+    TabsShowActiveWindows = 'ruyi.tabs.show.active.windows',
+    // tabs 显示历史窗口
+    TabsShowHistoryWindows = 'ruyi.show.inactive.windows',
+    // tabs 显示浏览记录
+    TabsShowTopViewer = 'ruyi.tabs.show.top.viewer'
+}
 
 export const dbGetTabsByWindowId = async (windowId) => {
     const tabMap = await GetMap(TabDB, DB.TabDB.TabsMap);

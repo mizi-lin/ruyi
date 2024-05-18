@@ -1,4 +1,5 @@
-import { get } from 'lodash-es';
+import { get, isNumber } from 'lodash-es';
+import { likeDecimal, likeEntities } from './numbers';
 
 /**
  * 将数组转换为对象。每个数组元素基于指定的键（key）成为对象的属性，
@@ -13,8 +14,9 @@ export function toObj(arr: Rows, key: string) {
     return arr.reduce((temp, item) => {
         // 根据key从当前元素中获取属性值，用作对象的键
         const objKey = get(item, key);
+        const key$ = likeDecimal(objKey);
         // 将获取到的键值对添加到temp对象中
-        temp[objKey] = item;
+        temp[key$] = item;
         // 返回更新后的对象
         return temp;
     }, {});
@@ -30,7 +32,7 @@ export function toMap(arr: Rows, key: string): Map<any, any> {
     // 将数组转换为对象，每个属性值为数组中对应元素的引用
     const obj = toObj(arr, key);
     // 将对象转换为Map，确保键的类型保持不变
-    const map = new Map(Object.entries(obj));
+    const map = new Map(likeEntities(obj) as Iterable<[any, any]>);
     return map;
 }
 

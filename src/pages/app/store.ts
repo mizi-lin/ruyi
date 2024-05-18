@@ -127,9 +127,9 @@ export const topHistoryStore = selector({
         const topPages = orderBy(pages, 'visitCount', 'desc').slice(0, 10);
         const topOrigins = orderBy(origins, 'visitCount', 'desc').slice(0, 10);
         return {
-            topUrls: historyMockWindow(topUrls, 101),
-            topPages: historyMockWindow(topPages, 102),
-            topOrigins: historyMockWindow(topOrigins, 103)
+            topUrls: historyMockWindow(topUrls, 101, 'Top URL'),
+            topPages: historyMockWindow(topPages, 102, 'Top Pages'),
+            topOrigins: historyMockWindow(topOrigins, 103, 'Top Origins')
         };
     }
 });

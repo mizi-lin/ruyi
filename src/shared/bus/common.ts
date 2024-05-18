@@ -21,3 +21,13 @@ export function toCountMap(arr: Rows, key: string | ((item: Record<string, any>,
     }
     return map;
 }
+
+/**
+ * 根据URL获取favicon的地址
+ */
+export function faviconURL(url) {
+    const URI = new URL(chrome.runtime.getURL('/_favicon/'));
+    URI.searchParams.set('pageUrl', url);
+    URI.searchParams.set('size', '16');
+    return URI.toString();
+}

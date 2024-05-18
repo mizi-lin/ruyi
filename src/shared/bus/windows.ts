@@ -1,6 +1,6 @@
 import { DB, GetMap, WindowDB, GetSet, TabDB, RemoveMap } from '@root/src/db';
-import { groupBy } from 'lodash-es';
 import { getTabsWithoutEmpty } from './tabs';
+import { groupBy } from '../utils';
 
 /**
  * 更新 windows 相关的映射表

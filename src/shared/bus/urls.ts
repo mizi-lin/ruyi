@@ -59,12 +59,13 @@ export async function updateURLWithHistory() {
 
     const urlsMaps = await GetMap(UrlDB, DB.UrlDB.URLsMap);
     const nostoreURlSet = await GetSet(UrlDB, DB.UrlDB.NoSignURLsSet);
+    const originFaviconMap = await GetMap(UrlDB, DB.UrlDB.URLOriginFaviconMap);
 
     // 更新URL信息
     for await (const item of result) {
         const { url } = item;
         if (!urlsMaps.has(url)) {
-            const { hostname } = new URL(url);
+            const { host, hostname = host } = new URL(url);
             nostoreURlSet.add(url);
             urlsMaps.set(url, { url, title: hostname });
         }
@@ -72,6 +73,22 @@ export async function updateURLWithHistory() {
 
     await UrlDB.setItem(DB.UrlDB.URLsMap, urlsMaps);
     await UrlDB.setItem(DB.UrlDB.NoSignURLsSet, nostoreURlSet);
+}
+
+/**
+ * URL Origin favicon map
+ * 数据备份，用于读取不到 tab 关联信息
+ */
+export async function updateURLOriginFaviconMap(tabs?: chrome.tabs.Tab[]) {
+    tabs = tabs ?? (await chrome.tabs.query({}));
+    for await (const tab of tabs) {
+        const { pendingUrl, url = pendingUrl, favIconUrl } = tab;
+        if (url && favIconUrl) {
+            const { host, hostname = host } = new URL(url);
+            // 每次读写避免数据读写丢失
+            await UpdateMap(UrlDB, DB.UrlDB.URLOriginFaviconMap, hostname, favIconUrl);
+        }
+    }
 }
 
 /**

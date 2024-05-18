@@ -1,4 +1,3 @@
-import { groupBy } from 'lodash-es';
 import { sendMsgToApp } from './utils/bus';
 import { MsgKey } from '@root/src/constants';
 

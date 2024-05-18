@@ -1,6 +1,5 @@
 import { DB, GetMap, GetSet, RemoveMap, RemoveSet, TabDB, UpdateMap, WindowDB } from '@root/src/db';
-import { insertSet, toMap } from '@root/src/shared/utils';
-import { groupBy } from 'lodash-es';
+import { groupBy, insertSet, toMap } from '@root/src/shared/utils';
 
 export async function existTab(tabId) {
     try {
@@ -26,7 +25,7 @@ export async function isActiveWindowById(windowId) {
 }
 
 export async function removeVariousTabs({ tabs }) {
-    const windowTabs = groupBy(tabs, 'windowId');
+    const windowTabs = groupBy<chrome.tabs.Tab>(tabs, 'windowId');
     const activeWindows = await GetSet(WindowDB, DB.WindowDB.ActiveWindowsSet);
 
     // 先从窗口映射中删除对应的标签页
@@ -51,6 +50,24 @@ export async function removeVariousTabs({ tabs }) {
             await UpdateMap(WindowDB, DB.WindowDB.AllWindowTabsMap, windowId, sourceSet);
         }
     }
+}
+
+export async function removeTab({ windowId, tab, active }) {
+    // 删除 tab
+    if (active) {
+        return await chrome.tabs.remove(tab.id);
+    }
+    await UpdateMap(WindowDB, DB.WindowDB.AllWindowTabsMap, windowId, (tabs = new Set()) => {
+        tabs.delete(tab.id);
+        return tabs;
+    });
+}
+
+export async function pinnedTab({ tab, active }) {
+    console.log('pinnedTab', tab, active);
+    return active
+        ? await chrome.tabs.update(tab.id, { pinned: !tab.pinned })
+        : await chrome.tabs.create({ url: tab.url, pinned: !tab.pinned, windowId: chrome.windows.WINDOW_ID_CURRENT });
 }
 
 const funcMap = {
@@ -114,19 +131,13 @@ const funcMap = {
         }
     },
 
+    // 固定标签
+    pinnedTab,
+
     /**
      * 删除特定视窗下的标签页
      */
-    removeTab: async ({ windowId, tab, active }) => {
-        // 删除 tab
-        if (active) {
-            return await chrome.tabs.remove(tab.id);
-        }
-        await UpdateMap(WindowDB, DB.WindowDB.AllWindowTabsMap, windowId, (tabs = new Set()) => {
-            tabs.delete(tab.id);
-            return tabs;
-        });
-    },
+    removeTab,
 
     /**
      * 删除任意来源的标签页

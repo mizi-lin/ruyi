@@ -1,7 +1,7 @@
-import { DB, GetMap, TabDB } from '@root/src/db';
-import { updateURLWithHistory, updateURLWithTab } from '@root/src/shared/bus/urls';
+import { updateURLOriginFaviconMap, updateURLWithHistory } from '@root/src/shared/bus/urls';
 import { cleanupDuplicateHistoryWindows, updateWindow } from '@root/src/shared/bus/windows';
-import { getTabsWithoutEmpty } from '@root/src/shared/bus';
+import { getTabsWithoutEmpty, updateTabs } from '@root/src/shared/bus';
+import { initSetting } from '@root/src/shared/bus/setting';
 
 /**
  * 安装或更新时触发
@@ -10,22 +10,24 @@ import { getTabsWithoutEmpty } from '@root/src/shared/bus';
 chrome.runtime.onInstalled.addListener(async (...args) => {
     console.log('onInstalled --->>> ', args);
 
-    const tabstore = await GetMap(TabDB, DB.TabDB.TabsMap);
-    // tabs 初始化数据或更新数据
     const tabs = await getTabsWithoutEmpty();
-    for await (const tab of tabs) {
-        tabstore.set(tab.id, tab);
-        // URLs 信息更新
-        await updateURLWithTab(tab);
-    }
-    await TabDB.setItem(DB.TabDB.TabsMap, tabstore);
+
+    await updateTabs(tabs);
+
+    // origin favicon
+    await updateURLOriginFaviconMap(tabs);
+
     // 根据history记录URL信息
     await updateURLWithHistory();
+
     // 更新Windows相关信息
     await updateWindow();
 
     // 清除重复的窗口记录
     await cleanupDuplicateHistoryWindows();
+
+    // 配置信息初始化
+    await initSetting();
 
     // 读取未标记记录的URL信息
     // @todo
@@ -40,4 +42,9 @@ chrome.runtime.onInstalled.addListener(async (...args) => {
  */
 chrome.runtime.onRestartRequired.addListener(async () => {
     await cleanupDuplicateHistoryWindows();
+});
+
+chrome.commands.onCommand.addListener((command) => {
+    // 奇怪，为什么监测不到 commands
+    console.log(`Command --> "${command}" triggered`);
 });

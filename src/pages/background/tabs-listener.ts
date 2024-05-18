@@ -2,8 +2,9 @@ import { MsgKey } from '@root/src/constants';
 import { UpdateMap, TabDB, DB, GetMap, WindowDB } from '@root/src/db';
 import { getTabsWithoutEmpty, isEmptyTab } from '@root/src/shared/bus/tabs';
 import { updateCurrentWindowId, updateURLWithTab, updateTab } from '@root/src/shared/bus';
-import { toSet } from '@root/src/shared/utils';
+import { insertSet, toSet } from '@root/src/shared/utils';
 import { sendMsgToApp } from './utils/bus';
+import { isNil } from 'lodash-es';
 
 /**
  * Tab Create
@@ -135,14 +136,24 @@ chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     // 视为favIconUrl获取到了, 才会认为更新成功
     if (changeInfo?.status === 'complete') {
+        const { pinned, index } = tab;
         await updateURLWithTab(tab);
         await updateTab(tabId, tab);
         await UpdateMap(WindowDB, DB.WindowDB.AllWindowTabsMap, tab.windowId, (set = new Set()) => {
-            set.delete(tabId);
-            set.add(tabId);
+            if (pinned) {
+                set = insertSet(set, index, tabId);
+            } else {
+                set.add(tabId);
+            }
             return set;
         });
         await sendMsgToApp(MsgKey.DataReload);
-        console.log('tabs onUpdated --->>', tabId, changeInfo, tab);
     }
+
+    if (!isNil(tab.pinned)) {
+        await updateTab(tabId, tab);
+        await sendMsgToApp(MsgKey.DataReload);
+    }
+
+    console.log('tabs onUpdated --->>', changeInfo?.status, tabId, changeInfo, tab);
 });
