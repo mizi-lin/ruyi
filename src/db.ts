@@ -1,6 +1,4 @@
-import { isEmpty } from 'lodash-es';
 import { isEmptyTab } from './shared/bus/tabs';
-import ShowHistoryWindowTip from './pages/app/RyWindow/ShowHistoryWindowTip';
 
 // 存储URL相关信息
 export const UrlDB = localforage.createInstance({ name: 'ruyi-urls' });
@@ -133,7 +131,7 @@ export enum SettingDBKeys {
 export const dbGetTabsByWindowId = async (windowId) => {
     const tabMap = await GetMap(TabDB, DB.TabDB.TabsMap);
     const windowMap = await GetMap(WindowDB, DB.WindowDB.AllWindowTabsMap);
-    const tabs = [...windowMap.get(windowId)] ?? [];
+    const tabs = [...windowMap.get(windowId)];
     return tabs.map((tabId) => tabMap.get(tabId));
 };
 

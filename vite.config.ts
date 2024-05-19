@@ -51,9 +51,9 @@ export default defineConfig({
     ],
     publicDir: resolve(rootDir, 'public'),
     build: {
-        outDir: resolve(rootDir, 'dist'),
+        outDir: isProduction ? resolve(rootDir, 'build') : resolve(rootDir, 'dist'),
         /** Can slow down build speed. */
-        sourcemap: true,
+        sourcemap: !isProduction,
         minify: isProduction,
         modulePreload: false,
         reportCompressedSize: isProduction,

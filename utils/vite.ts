@@ -6,26 +6,26 @@ import watchRebuild from './plugins/watch-rebuild';
 import inlineVitePreloadScript from './plugins/inline-vite-preload-script';
 
 export const getPlugins = (isDev: boolean): PluginOption[] => [
-  makeManifest({ getCacheInvalidationKey }),
-  customDynamicImport(),
-  // You can toggle enable HMR in background script or view
-  addHmr({ background: true, view: true, isDev }),
-  isDev && watchRebuild({ afterWriteBundle: regenerateCacheInvalidationKey }),
-  // For fix issue#177 (https://github.com/Jonghakseo/ruyi/issues/177)
-  inlineVitePreloadScript(),
+    makeManifest({ getCacheInvalidationKey, isDev }),
+    customDynamicImport(),
+    // You can toggle enable HMR in background script or view
+    addHmr({ background: true, view: true, isDev }),
+    isDev && watchRebuild({ afterWriteBundle: regenerateCacheInvalidationKey }),
+    // For fix issue#177 (https://github.com/Jonghakseo/ruyi/issues/177)
+    inlineVitePreloadScript()
 ];
 
 const cacheInvalidationKeyRef = { current: generateKey() };
 
 export function getCacheInvalidationKey() {
-  return cacheInvalidationKeyRef.current;
+    return cacheInvalidationKeyRef.current;
 }
 
 function regenerateCacheInvalidationKey() {
-  cacheInvalidationKeyRef.current = generateKey();
-  return cacheInvalidationKeyRef;
+    cacheInvalidationKeyRef.current = generateKey();
+    return cacheInvalidationKeyRef;
 }
 
 function generateKey(): string {
-  return `${Date.now().toFixed()}`;
+    return `${Date.now().toFixed()}`;
 }

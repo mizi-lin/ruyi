@@ -1,8 +1,7 @@
-import { LocalforageKey, SearchTemp } from '@root/src/constants';
+import { SearchTemp } from '@root/src/constants';
 import { DB, GetMap, UrlDB } from '@root/src/db';
 import { countHistory, historyMockWindow } from '@root/src/shared/bus';
-import { toCountMap, toMap } from '@root/src/shared/utils';
-import { mapValues, orderBy } from 'lodash-es';
+import { orderBy } from 'lodash-es';
 import { atomFamily } from 'recoil';
 
 /**
