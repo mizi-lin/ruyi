@@ -20,8 +20,8 @@ const manifest = {
         'tabs',
         'tabGroups',
         'history',
-        'favicon'
-        // 'activeTab',
+        'favicon',
+        'activeTab'
         // 'contextMenus',
         // 'commands',
         // 'downloads',
