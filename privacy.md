@@ -1,4 +1,5 @@
 Data Privacy Policy for Ruyi 如意
+
 We do not track any of your data, period.
 
 We do not track any usage of the extension - that includes searches, filters, tabs, windows, popup opens, etc
