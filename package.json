@@ -29,7 +29,7 @@
         "@ant-design/icons": "5.3.6",
         "add": "^2.0.6",
         "antd": "^5.17.0",
-        "axios": "^1.6.8",
+        "axios": "^1.7.1",
         "cheerio": "^1.0.0-rc.12",
         "classnames": "^2.5.1",
         "construct-style-sheets-polyfill": "3.1.0",
