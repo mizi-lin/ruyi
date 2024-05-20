@@ -111,6 +111,15 @@ https://web.archive.org/web/20060701000000*/http://news.sina.com.cn/c/2003-01-30
 
 ## one tab 模式
 
+## url 浏览记录
+
+快捷键 zz 打开浏览记录，可以按住 tab 切换 打开页面
+快捷键 zzz 默认打开上一次访问的 window / tabs 
+
+## 当前网站访问记录
+
+快捷键 hh 打开当前网站访问记录，按访问数排序
+
 
 ## 桌面移动化
 

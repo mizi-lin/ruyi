@@ -2,6 +2,8 @@ import styles from './styles.module.less';
 import TabGroupSvg from './assets/tabs.svg?react';
 import BookmarksSvg from './assets/bookmarks.svg?react';
 import HistorySvg from './assets/history.svg?react';
+import DataSyncSvg from './assets/data-sync.svg?react';
+import { SendTask } from './business';
 
 const items = [
     { label: 'Windows 视窗', key: '/windows', icon: <BlockOutlined /> },
@@ -13,6 +15,7 @@ const items = [
 const Layout: FC = () => {
     const { pathname } = useLocation();
     const navigate = useNavigate();
+
     return (
         <article className={styles.layout}>
             <header className={styles.header}>
@@ -22,7 +25,24 @@ const Layout: FC = () => {
                         <span>如意</span>
                     </Space>
                 </div>
-                <div></div>
+                <div>
+                    <Tooltip
+                        title={
+                            <section>
+                                <div>数据重建</div>
+                                <summary>当发现数据异常的时候，可以选择数据重建，保证系统正常运行</summary>
+                            </section>
+                        }
+                    >
+                        <DataSyncSvg
+                            width={24}
+                            height={24}
+                            onClick={async () => {
+                                await SendTask({ type: SendTask.rebuild });
+                            }}
+                        />
+                    </Tooltip>
+                </div>
             </header>
             <main className={styles.main}>
                 <section className={styles.aside}>

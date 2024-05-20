@@ -4,12 +4,10 @@ import { getTabsWithoutEmpty, updateTabs } from '@root/src/shared/bus';
 import { initSetting } from '@root/src/shared/bus/setting';
 
 /**
- * 安装或更新时触发
+ * 安装时触发
  * 一般在此做数据初始化
  */
-chrome.runtime.onInstalled.addListener(async (...args) => {
-    console.log('onInstalled --->>> ', args);
-
+export async function install() {
     const tabs = await getTabsWithoutEmpty();
 
     await updateTabs(tabs);
@@ -32,6 +30,15 @@ chrome.runtime.onInstalled.addListener(async (...args) => {
     // 读取未标记记录的URL信息
     // @todo
     // handlerNoStoreURL();
+}
+
+/**
+ * 安装或更新时触发
+ * 一般在此做数据初始化
+ */
+chrome.runtime.onInstalled.addListener(async (...args) => {
+    console.log('onInstalled --->>> ', args);
+    install();
 });
 
 /**

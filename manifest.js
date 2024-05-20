@@ -16,18 +16,18 @@ const manifest = {
     version: packageJson.version,
     description: '__MSG_extensionDescription__',
     permissions: [
-        'activeTab',
         'storage',
         'tabs',
         'tabGroups',
         'history',
         'favicon'
+        // 'activeTab',
         // 'contextMenus',
         // 'commands',
         // 'downloads',
         // 'scripting',
     ],
-    optional_permissions: ['offscreen', 'desktopCapture', 'alarms'],
+    // optional_permissions: ['offscreen', 'desktopCapture', 'alarms'],
     /**
      * Options 配置页
      */

@@ -19,6 +19,10 @@
 
 # hulu use yarn v2 cache must be ignore
 # *.zip
+ruyi.zip
+build.pem
+ruyi.pem
+key.pem
 
 # Logs and databases
 *.log
