@@ -7,7 +7,7 @@ export const TabDB = localforage.createInstance({ name: 'ruyi-tabs' });
 // 存储windows相关信息
 export const WindowDB = localforage.createInstance({ name: 'ruyi-windows' });
 // 存储group相关信息
-export const GroupDB = localforage.createInstance({ name: 'ruyi-groups' });
+export const TabGroupsDB = localforage.createInstance({ name: 'ruyi-tab-groups' });
 // 配置相关
 export const SettingDB = localforage.createInstance({ name: 'ruyi-setting' });
 

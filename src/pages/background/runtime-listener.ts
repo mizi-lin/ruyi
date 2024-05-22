@@ -1,6 +1,6 @@
 import { updateURLOriginFaviconMap, updateURLWithHistory } from '@root/src/shared/bus/urls';
 import { cleanupDuplicateHistoryWindows, updateWindow } from '@root/src/shared/bus/windows';
-import { getTabsWithoutEmpty, updateTabs } from '@root/src/shared/bus';
+import { cleanupDuplicateTabGroups, getTabsWithoutEmpty, updateTabGroups, updateTabs } from '@root/src/shared/bus';
 import { initSetting } from '@root/src/shared/bus/setting';
 
 /**
@@ -21,8 +21,14 @@ export async function install() {
     // 更新Windows相关信息
     await updateWindow();
 
+    // 获取 TabGroups
+    await updateTabGroups();
+
     // 清除重复的窗口记录
     await cleanupDuplicateHistoryWindows();
+
+    // 清除重复的标签组
+    await cleanupDuplicateTabGroups();
 
     // 配置信息初始化
     await initSetting();
@@ -38,7 +44,7 @@ export async function install() {
  */
 chrome.runtime.onInstalled.addListener(async (...args) => {
     console.log('onInstalled --->>> ', args);
-    install();
+    await install();
 });
 
 /**
@@ -48,7 +54,7 @@ chrome.runtime.onInstalled.addListener(async (...args) => {
  * 所以这里需要清理这种情况
  */
 chrome.runtime.onRestartRequired.addListener(async () => {
-    await cleanupDuplicateHistoryWindows();
+    await install();
 });
 
 chrome.commands.onCommand.addListener((command) => {

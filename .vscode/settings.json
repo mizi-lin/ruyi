@@ -1,4 +1,38 @@
 {
+    // 打字时候丝滑顺畅
+    "editor.smoothScrolling": true,
+    "editor.cursorBlinking": "expand",
+    "editor.cursorSmoothCaretAnimation": "on",
+    "workbench.list.smoothScrolling": true,
+    // 关闭开屏 VSCode 的亲切问候
+    "workbench.startupEditor": "none",
+    // index 替换成 目录名, 在打开很多文件时，能区分出是谁
+    "workbench.editor.customLabels.patterns": {
+        "**/index.vue": "${dirname}.vue",
+        "**/index.js": "${dirname}.js",
+        "**/index.ts": "${dirname}.ts",
+        "**/index.jsx": "${dirname}.jsx",
+        "**/index.tsx": "${dirname}.tsx"
+    },
+    // 彩虹挂号
+    "editor.guides.bracketPairs": true,
+    // 作用域块线条显示
+    "editor.bracketPairColorization.enabled": true,
+    // 控制活动代码段是否阻止快速建议
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    // 除了 `Tab` 键以外， `Enter` 键是否同样可以接受建议
+    // 这能减少“插入新行”和“接受建议”命令之间的歧义
+    "editor.acceptSuggestionOnEnter": "smart",
+    // 代码补全列表中，优先选择最近的建议
+    "editor.suggestSelection": "recentlyUsedByPrefix",
+    // typescript 中文提示
+    "typescript.locale": "zh-CN",
+    // TS 导入、重命名、补全自动更新相关引用
+    "typescript.preferences.preferTypeOnlyAutoImports": true,
+    "typescript.preferences.includePackageJsonAutoImports": "on",
+    "javascript.suggest.autoImports": true,
+    "typescript.suggest.autoImports": true,
+
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnPaste": false,
     "editor.formatOnType": false,
@@ -18,6 +52,7 @@
         "**/.vscode": true,
         "**/.history": true,
         "**/dist": true,
+        "**/build": true,
         "**/node_modules": true,
         "**/bower_components": true,
         "**/*.code-search": true,

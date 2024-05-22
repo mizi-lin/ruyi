@@ -8,9 +8,7 @@ type SendTaskOptions = {
 
 export const SendTask = async ({ type, options }: SendTaskOptions) => {
     if (!type) return;
-    chrome.runtime.sendMessage({ type, options }, function (response) {
-        console.log('------>response', response);
-    });
+    await chrome.runtime.sendMessage({ type, options });
 };
 
 // 重建数据

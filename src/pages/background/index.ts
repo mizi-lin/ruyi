@@ -5,6 +5,7 @@ import './windows-listener';
 import './tabs-listener';
 import './action-listener';
 import './history-listener';
+import './tab-groups-listener';
 import './route-windows';
 import './from-app-message';
 

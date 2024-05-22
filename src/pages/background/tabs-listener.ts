@@ -84,6 +84,10 @@ chrome.tabs.onMoved.addListener(async (tabId, moveInfo) => {
 
     await sendMsgToApp(MsgKey.DataReload);
 
+    /**
+     * @todo 如果移动的tab属于组，需要同步更新组信息
+     */
+
     console.log('tabs onMoved --->>', tabId, moveInfo);
 });
 

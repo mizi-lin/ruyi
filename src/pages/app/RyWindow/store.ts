@@ -22,6 +22,15 @@ export const windowSettingAtom = atomFamily({
     ]
 });
 
+export const currentWindowIdStore = selector({
+    key: 'ruyi/currentWindowIdStore',
+    get: async ({ get }) => {
+        get(reloadStore);
+        const currentWindowId = await WindowDB.getItem(DB.WindowDB.CurrentId);
+        return currentWindowId;
+    }
+});
+
 export const windowSearchAtom = atom({
     key: 'ruyi/windowSearchAtom',
     default: ''

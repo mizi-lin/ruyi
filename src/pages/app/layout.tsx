@@ -4,6 +4,8 @@ import BookmarksSvg from './assets/bookmarks.svg?react';
 import HistorySvg from './assets/history.svg?react';
 import DataSyncSvg from './assets/data-sync.svg?react';
 import { SendTask } from './business';
+import { useStoreReload } from './store';
+import { MsgKey } from '@root/src/constants';
 
 const items = [
     { label: 'Windows 视窗', key: '/windows', icon: <BlockOutlined /> },
@@ -15,6 +17,26 @@ const items = [
 const Layout: FC = () => {
     const { pathname } = useLocation();
     const navigate = useNavigate();
+
+    /**
+     * new
+     */
+    const storeReload = useStoreReload();
+
+    const listener = (request) => {
+        const { type, data } = request;
+        if (type === MsgKey.DataReload) {
+            storeReload();
+        }
+        return true;
+    };
+
+    useEffect(() => {
+        chrome.runtime.onMessage.addListener(listener);
+        return () => {
+            chrome.runtime.onMessage.removeListener(listener);
+        };
+    }, []);
 
     return (
         <article className={styles.layout}>

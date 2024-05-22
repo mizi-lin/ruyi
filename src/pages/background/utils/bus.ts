@@ -12,6 +12,8 @@ export const getAppTabId = async () => {
 export const sendMsgToApp = async (type: string, options: Record<string, any> = {}) => {
     const appTabId = await getAppTabId();
     if (appTabId) {
-        chrome.tabs.sendMessage(appTabId, { type, ...options });
+        try {
+            await chrome.tabs.sendMessage(appTabId, { type, ...options });
+        } catch (e) {}
     }
 };

@@ -21,8 +21,10 @@ import SearchToolbar from './SearchToolbar';
 import { useStoreReload } from '../store';
 import { PinterestOutlined } from '@ant-design/icons';
 import { SettingDBKeys } from '@root/src/db';
+import MetTitle from '../components/MetTitle';
 
 const ShowHistoryWindowTip = lazy(() => import('./ShowHistoryWindowTip'));
+export const nonFavicon = <Button icon={<TabSvg width={16} height={16} />} shape={'circle'} />;
 
 export const Toolbar = ({ title, windowId, tabs, active, current, topHistory }) => {
     const removeWindow = useRemoveWindow();
@@ -59,7 +61,7 @@ export const Toolbar = ({ title, windowId, tabs, active, current, topHistory }) 
 export const TabItem = ({ tab, windowId, active, current, topHistory }) => {
     const search = useRecoilValue(windowSearchAtom);
     const isSearch = search && tabMatcher(tab, search);
-    const nonFavicon = <Button icon={<TabSvg width={16} height={16} />} shape={'circle'} />;
+
     const openTab = useOpenTab();
     const closeTab = useRemoveTab();
     const pinnedTab = usePinnedTab();
@@ -132,7 +134,7 @@ export const TabItem = ({ tab, windowId, active, current, topHistory }) => {
                     <Avatar src={tab?.favIconUrl} icon={nonFavicon} size={20} />
                 </Badge>
 
-                <span style={{ flex: 1 }}>{tab?.title?.substring?.(0, 30)}</span>
+                <MetTitle style={{ flex: 1 }}>{tab?.title?.substring?.(0, 30)}</MetTitle>
             </div>
         </Popover>
     );
@@ -219,24 +221,6 @@ export const WindowPanels = () => {
 };
 
 export const RyWindows = () => {
-    /**
-     * new
-     */
-    const storeReload = useStoreReload();
-
-    useEffect(() => {
-        const listener = (request) => {
-            const { type, data } = request;
-            if (type === MsgKey.DataReload) {
-                storeReload();
-            }
-        };
-        chrome.runtime.onMessage.addListener(listener);
-        return () => {
-            chrome.runtime.onMessage.removeListener(listener);
-        };
-    }, []);
-
     return (
         <section className={styles.windows}>
             <SearchToolbar />

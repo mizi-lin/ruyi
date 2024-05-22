@@ -4,6 +4,7 @@ import { groupBy, insertSet, toMap } from '@root/src/shared/utils';
 import { SendTask } from '../app/business';
 import { install } from './runtime-listener';
 import { MsgKey } from '@root/src/constants';
+import { tabGroups$db } from '@root/src/DBStore';
 
 const funcMap = {
     /**
@@ -45,6 +46,13 @@ const funcMap = {
     removeWindow,
 
     openApp,
+
+    /**
+     * 修改标签组信息
+     */
+    modifyTabGroup,
+
+    removeTabGroup,
 
     [SendTask.rebuild]: rebuild
 };
@@ -261,7 +269,6 @@ export async function removeTab({ windowId, tab, active }) {
  * 固定标签页
  */
 export async function pinnedTab({ tab, active }) {
-    console.log('pinnedTab', tab, active);
     return active
         ? await chrome.tabs.update(tab.id, { pinned: !tab.pinned })
         : await chrome.tabs.create({ url: tab.url, pinned: !tab.pinned, windowId: chrome.windows.WINDOW_ID_CURRENT });
@@ -311,3 +318,32 @@ export async function openApp() {
 
 // 打开搜索引擎
 export async function openSearchEngines() {}
+
+/**
+ * *****************************
+ * Tab Groups
+ * *****************************
+ */
+export async function modifyTabGroup({ tabGroupId, record }) {
+    console.log('-------> tabGroup modifyTabGroup', tabGroupId, record);
+    await chrome.tabGroups.update(tabGroupId, record);
+}
+
+export async function removeTabGroup({ tabGroupId, record }) {
+    const { active, tabs } = record;
+
+    // 活跃状态，删除组信息
+    if (tabs?.length && active) {
+        // tabGroup 没有remove API, 所以需要新建窗口，将组移动过去，并删除窗口
+        const tabs = await chrome.tabs.query({ groupId: tabGroupId });
+        await chrome.tabs.remove(tabs.map((tab) => tab.id));
+
+        // await tabGroups$db.updateValue(tabGroupId, { active: false });
+        // 删除 windowId
+        // await windows$db.remove(window.id);
+        return;
+    }
+
+    // 非活跃状态，删除组信息
+    await tabGroups$db.remove(tabGroupId);
+}

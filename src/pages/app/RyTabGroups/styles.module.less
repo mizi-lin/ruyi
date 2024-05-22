@@ -1,0 +1,111 @@
+.tabGroups {
+    .columns {
+        position: relative;
+        width: calc(20% - 47px);
+        gap: 8px;
+        display: flex;
+        flex-direction: column;
+        padding: 8px 16px 20px;
+        margin-bottom: 16px;
+        background: #f0f0f0;
+        border-radius: 8px;
+        border-top-width: 3px !important;
+
+        &.active {
+            background: #fff;
+            box-shadow:
+                rgba(50, 50, 93, 0.05) 0px 6px 12px -2px,
+                rgba(0, 0, 0, 0.1) 0px 3px 7px -3px;
+        }
+
+        &.current {
+            background: rgba(@primary-color, 0.1);
+        }
+
+        > header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 4px;
+            border-radius: 6px;
+            z-index: 1;
+
+            > title {
+                display: block;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
+                font-size: 18px;
+                font-weight: 100;
+            }
+        }
+
+        .edit {
+            position: absolute;
+            top: 0;
+            left: 8px;
+            right: 8px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 16px;
+            background: #fff;
+            box-shadow:
+                rgba(50, 50, 93, 0.05) 0px 6px 12px -2px,
+                rgba(0, 0, 0, 0.1) 0px 3px 7px -3px;
+
+            transform: all 1s;
+
+            .colors {
+                display: flex;
+                gap: 8px;
+
+                > span {
+                    width: 33%;
+                    height: 32px;
+                    border-radius: 8px;
+                    border: 3px solid transparent;
+
+                    &:hover {
+                        border: 3px solid #fff;
+                        cursor: pointer;
+                        transform: all 1s;
+                    }
+                }
+            }
+        }
+
+        > main {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+
+            > div {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 5px 0;
+
+                > title {
+                    display: block;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    overflow: hidden;
+                }
+
+                &:hover {
+                    margin-left: -8px;
+                    margin-right: -8px;
+                    padding-left: 8px;
+                    padding-right: 8px;
+                    background: rgba(@primary-color, 0.1);
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                }
+            }
+        }
+    }
+}
