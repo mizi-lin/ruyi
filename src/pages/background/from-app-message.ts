@@ -1,6 +1,6 @@
 import { getAppUrl, sendMsgToApp } from './utils/bus';
 import { DB, GetMap, GetSet, RemoveMap, RemoveSet, TabDB, UpdateMap, WindowDB } from '@root/src/db';
-import { groupBy, insertSet, toMap } from '@root/src/shared/utils';
+import { asyncMap, groupBy, insertSet, toMap } from '@root/src/shared/utils';
 import { SendTask } from '../app/business';
 import { install } from './runtime-listener';
 import { MsgKey } from '@root/src/constants';
@@ -54,12 +54,16 @@ const funcMap = {
 
     removeTabGroup,
 
+    openTabGroup,
+
+    openTabGroupInCurrentWindow,
+
     [SendTask.rebuild]: rebuild
 };
 
 chrome.runtime.onMessage.addListener(async (request, render, sendResponse) => {
     const { type, options } = request;
-    console.log('from-app-message', request, render);
+    console.log('from-app-message', request);
     try {
         await funcMap[type]?.(options, sendResponse, render);
     } catch (e) {
@@ -192,7 +196,7 @@ async function openTab({ windowId, tab, active, incognito = false }) {
     }
 
     // 在当前窗口打开标签页的逻辑
-    await chrome.tabs.create({ url: tab.url, windowId: chrome.windows.WINDOW_ID_CURRENT, active: true });
+    return await chrome.tabs.create({ url: tab.url, windowId: chrome.windows.WINDOW_ID_CURRENT, active: true });
 }
 
 /**
@@ -334,16 +338,81 @@ export async function removeTabGroup({ tabGroupId, record }) {
 
     // 活跃状态，删除组信息
     if (tabs?.length && active) {
-        // tabGroup 没有remove API, 所以需要新建窗口，将组移动过去，并删除窗口
+        // tabGroup 没有remove API, 删除组就是删除该组中的标签
         const tabs = await chrome.tabs.query({ groupId: tabGroupId });
-        await chrome.tabs.remove(tabs.map((tab) => tab.id));
-
-        // await tabGroups$db.updateValue(tabGroupId, { active: false });
-        // 删除 windowId
-        // await windows$db.remove(window.id);
+        try {
+            await chrome.tabs.ungroup(tabs.map((tab) => tab.id));
+        } catch (e) {
+            for await (const tab of tabs) {
+                await chrome.tabs.remove(tab.id);
+            }
+        }
         return;
     }
 
     // 非活跃状态，删除组信息
     await tabGroups$db.remove(tabGroupId);
+}
+
+/**
+ * 若 window && group 都 active, 直接打开
+ * 若 window.active, group inactive, 则在当前窗口
+ * 若 window.inactive, group.inactive，则在当前窗口打开
+ */
+export async function openTabGroup({ tabGroupId, record, nofocusedWindow }) {
+    try {
+        const { active, tabs, windowId, color, title } = record;
+        const activeWindows = await GetMap(WindowDB, DB.WindowDB.ActiveWindowsSet);
+        const isActiveWindow = activeWindows.has(windowId);
+
+        if (active) {
+            await openTab({ windowId, active: isActiveWindow, tab: tabs?.[0] });
+            return tabGroupId;
+        }
+
+        if (!active) {
+            const openWindowId = isActiveWindow ? windowId : chrome.windows.WINDOW_ID_CURRENT;
+            // 重建标签页
+            const tabIds = await asyncMap(tabs, async (tab) => {
+                const { id } = await openTab({ windowId: openWindowId, active: false, tab });
+                return id;
+            });
+
+            // 重建组
+            const tabGroupId = await chrome.tabs.group({ createProperties: { windowId: openWindowId }, tabIds });
+
+            // 更新组信息
+            await chrome.tabGroups.update(tabGroupId, { color, title });
+
+            // 激活窗口
+            if (openWindowId !== chrome.windows.WINDOW_ID_CURRENT && !nofocusedWindow) {
+                await chrome.windows.update(openWindowId, { focused: true });
+            }
+
+            return tabGroupId;
+        }
+    } catch (e) {
+        console.log('openTabGroup oooo-->>', e);
+    }
+}
+
+/**
+ * 在当前窗口打开标签组
+ * 若标签组在其他窗口，则移动到当前窗口
+ */
+export async function openTabGroupInCurrentWindow({ tabGroupId, record }) {
+    const { windowId, active } = record;
+    const isActiveWindow = await isActiveWindowById(windowId);
+
+    if (!active) {
+        tabGroupId = await openTabGroup({ tabGroupId, record, nofocusedWindow: true });
+    }
+
+    const { id: currentWindowId } = await chrome.windows.getCurrent();
+
+    console.log('openTabGroupInCurrentWindow', windowId, currentWindowId);
+
+    if (currentWindowId !== windowId) {
+        await chrome.tabGroups.move(tabGroupId, { windowId: currentWindowId, index: -1 });
+    }
 }

@@ -39,10 +39,29 @@ export const useModifyTabGroup = (tabGroupId) => {
     });
 };
 
+export const useOpenTabGroup = (record: Row) => {
+    return useRecoilCallback(() => () => {
+        chrome.runtime.sendMessage({
+            type: 'openTabGroup',
+            options: { record }
+        });
+    });
+};
+
 export const useRemoveTabGroup = (record: Row) => {
     return useRecoilCallback(({ refresh }) => async () => {
         await chrome.runtime.sendMessage({
             type: 'removeTabGroup',
+            options: { tabGroupId: record.id, record }
+        });
+        refresh(tabGroupsStore);
+    });
+};
+
+export const useOpenTabGroupInCurrentWindow = (record: Row) => {
+    return useRecoilCallback(({ refresh }) => async () => {
+        await chrome.runtime.sendMessage({
+            type: 'openTabGroupInCurrentWindow',
             options: { tabGroupId: record.id, record }
         });
         refresh(tabGroupsStore);

@@ -1,4 +1,4 @@
-import { Constants, MsgKey, WindowSetting } from '@root/src/constants';
+import { Constants } from '@root/src/constants';
 import styles from './styles.module.less';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import Masonry from 'react-masonry-component';
@@ -18,8 +18,6 @@ import {
 import IncognitoSvg from './assets/incognito.svg?react';
 import TabSvg from './assets/tab.svg?react';
 import SearchToolbar from './SearchToolbar';
-import { useStoreReload } from '../store';
-import { PinterestOutlined } from '@ant-design/icons';
 import { SettingDBKeys } from '@root/src/db';
 import MetTitle from '../components/MetTitle';
 

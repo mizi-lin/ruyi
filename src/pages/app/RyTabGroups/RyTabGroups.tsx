@@ -1,4 +1,4 @@
-import { tabGroupsStore, useModifyTabGroup, useRemoveTabGroup } from './store';
+import { tabGroupsStore, useModifyTabGroup, useOpenTabGroup, useOpenTabGroupInCurrentWindow, useRemoveTabGroup } from './store';
 import { TabItem } from '../RyWindow/RyWindows';
 import styles from './styles.module.less';
 import Masonry from 'react-masonry-component';
@@ -13,6 +13,8 @@ const RyTabGroupsHeader = ({ item }) => {
     const modify = useModifyTabGroup(item.id);
 
     const remove = useRemoveTabGroup(item);
+    const open = useOpenTabGroup(item);
+    const openCurrent = useOpenTabGroupInCurrentWindow(item);
 
     const onChangeTitle = (e) => {
         const value = e.target.value;
@@ -28,6 +30,12 @@ const RyTabGroupsHeader = ({ item }) => {
             <header>
                 <title onMouseOver={() => setEdit(true)}>{item.title}</title>
                 <nav>
+                    <Tooltip title={'在当前窗口打开标签组(若标签组在其他窗口打开，则移动到当前窗口)'}>
+                        <AimOutlined onClick={openCurrent} />
+                    </Tooltip>
+                    <Tooltip title={'在原窗口中打开标签组(若原窗口不存在，则在当前窗口打开)'}>
+                        <ExportOutlined onClick={open} />
+                    </Tooltip>
                     {item.active ? (
                         <Tooltip title={'关闭标签组'}>
                             <CloseOutlined onClick={remove} />
