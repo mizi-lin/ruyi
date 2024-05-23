@@ -129,13 +129,13 @@ class DBStore {
     async updateRows(rows: Rows = [], key: string | number, updater?: (item: Row) => any) {
         for await (const row of rows) {
             const key$ = get(row, key);
-            await this.updateValue(key$, updater?.(row) ?? row);
+            await this.updateValue(key$, (await updater?.(row)) ?? row);
         }
     }
 
     async updateMap(map: Map<string | number, any>, updater?: (item: Row) => any) {
         for await (const [key, value] of [...map.entries()]) {
-            await this.updateValue(key, updater?.(value) ?? value);
+            await this.updateValue(key, (await updater?.(value)) ?? value);
         }
     }
 

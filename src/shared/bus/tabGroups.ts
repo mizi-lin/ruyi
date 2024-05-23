@@ -9,8 +9,8 @@ export const updateTabGroups = async (tabGroups?: chrome.tabGroups.TabGroup) => 
 
     await tabGroups$db.updateRows(tabGroups$, 'id', async (item) => {
         const tabs$ = await chrome.tabs.query({ groupId: item.id, windowId: item.windowId });
-        const tabs = tabs$.map((tab) => tab.id);
-        return { ...item, active: true, tabs, lastAccessed: Date.now() };
+        const tabIds = tabs$.map((tab) => tab.id);
+        return { ...item, active: true, tabs: tabIds, lastAccessed: Date.now() };
     });
 };
 

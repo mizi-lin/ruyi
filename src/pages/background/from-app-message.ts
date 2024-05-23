@@ -295,9 +295,7 @@ export async function pinnedTab({ tab, active }) {
  * 重建数据
  */
 export async function rebuild(options, sendRespnse, sender) {
-    // await install();
-    const tabsMap = await GetMap(TabDB, DB.TabDB.TabsMap);
-    await tabs$db.updateMap(tabsMap);
+    await install();
     await sendMsgToApp(MsgKey.DataReload);
 }
 
