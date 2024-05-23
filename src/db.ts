@@ -1,3 +1,4 @@
+import { tabGroups$db } from './DBStore';
 import { isEmptyTab } from './shared/bus/tabs';
 
 // 存储URL相关信息
@@ -6,13 +7,17 @@ export const UrlDB = localforage.createInstance({ name: 'ruyi-urls' });
 export const TabDB = localforage.createInstance({ name: 'ruyi-tabs' });
 // 存储windows相关信息
 export const WindowDB = localforage.createInstance({ name: 'ruyi-windows' });
-// 存储group相关信息
-export const TabGroupsDB = localforage.createInstance({ name: 'ruyi-tab-groups' });
 // 配置相关
 export const SettingDB = localforage.createInstance({ name: 'ruyi-setting' });
 
 // 存储域名域favicon的信息
 export const DomainFaviconDB = localforage.createInstance({ name: 'ruyi-domain-favicon' });
+
+/**
+ * ------------
+ * DBStore
+ * ------------
+ */
 
 export async function GetMap(db, storeKey, defaultMap?: Map<any, any>): Promise<Map<any, any>> {
     return (await db.getItem(storeKey)) || (defaultMap ?? new Map());
@@ -129,7 +134,7 @@ export enum SettingDBKeys {
 }
 
 export const dbGetTabsByWindowId = async (windowId) => {
-    const tabMap = await GetMap(TabDB, DB.TabDB.TabsMap);
+    const tabMap = await tabGroups$db.getAllMap();
     const windowMap = await GetMap(WindowDB, DB.WindowDB.AllWindowTabsMap);
     const tabs = [...windowMap.get(windowId)];
     return tabs.map((tabId) => tabMap.get(tabId));

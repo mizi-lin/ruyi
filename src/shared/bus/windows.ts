@@ -1,6 +1,7 @@
-import { DB, GetMap, WindowDB, GetSet, TabDB, RemoveMap } from '@root/src/db';
+import { DB, GetMap, WindowDB, GetSet, RemoveMap } from '@root/src/db';
 import { getTabsWithoutEmpty } from './tabs';
 import { groupBy } from '../utils';
+import { tabs$db } from '@root/src/DBStore';
 
 /**
  * 更新 windows 相关的映射表
@@ -52,13 +53,13 @@ export async function updateCurrentWindowId() {
 export async function cleanupDuplicateHistoryWindows() {
     const actives = await GetSet(WindowDB, DB.WindowDB.ActiveWindowsSet);
     const historiesMap = await GetMap(WindowDB, DB.WindowDB.AllWindowTabsMap);
-    const tabMap = await GetMap(TabDB, DB.TabDB.TabsMap);
     const histories = Array.from(historiesMap);
     const uniqMap = new Map();
     const uniqWindowIds = [];
-    for (const [windowId, tabIds] of histories) {
-        const urlkey = [...tabIds]
-            .map((id) => tabMap.get(id)?.url)
+    for await (const [windowId, tabIds] of histories) {
+        const tabs = await tabs$db.byIds(tabIds);
+        const urlkey = tabs
+            .map((item) => item?.url)
             .sort()
             .join(',');
         if (uniqMap.has(urlkey)) {

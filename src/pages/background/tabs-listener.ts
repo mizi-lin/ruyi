@@ -1,10 +1,11 @@
 import { MsgKey } from '@root/src/constants';
-import { UpdateMap, TabDB, DB, GetMap, WindowDB } from '@root/src/db';
-import { getTabsWithoutEmpty, isEmptyTab } from '@root/src/shared/bus/tabs';
+import { UpdateMap, DB, GetMap, WindowDB } from '@root/src/db';
+import { getTabById, getTabsWithoutEmpty, isEmptyTab } from '@root/src/shared/bus/tabs';
 import { updateCurrentWindowId, updateURLWithTab, updateTab } from '@root/src/shared/bus';
 import { insertSet, toSet } from '@root/src/shared/utils';
 import { sendMsgToApp } from './utils/bus';
 import { isNil } from 'lodash-es';
+import { tabGroups$db, tabs$db } from '@root/src/DBStore';
 
 /**
  * Tab Create
@@ -37,7 +38,7 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
     // 空页面不记录
     if (isEmptyTab(tab)) return;
 
-    await UpdateMap(TabDB, DB.TabDB.TabsMap, tabId, (item) => {
+    await tabs$db.updateValue(tabId, (item) => {
         return { ...item, ...tab };
     });
 
@@ -51,13 +52,13 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
  */
 chrome.tabs.onMoved.addListener(async (tabId, moveInfo) => {
     console.log('....', tabId, moveInfo);
-    const tabstore = await GetMap(TabDB, DB.TabDB.TabsMap);
     const { windowId: target } = moveInfo;
-    const { windowId: soruce } = tabstore.get(tabId);
+    const { windowId: soruce } = await tabs$db.getValue(tabId);
 
     // 更新 tab 信息
     const tab = await chrome.tabs.get(tabId);
-    await UpdateMap(TabDB, DB.TabDB.TabsMap, tabId, (item) => {
+
+    await tabs$db.updateValue(tabId, (item) => {
         return { ...item, ...tab };
     });
 
@@ -114,7 +115,7 @@ chrome.tabs.onAttached.addListener(async (tabId, attachInfo) => {
     const tabs = await chrome.tabs.query({ windowId: newWindowId });
     await UpdateMap(WindowDB, DB.WindowDB.AllWindowTabsMap, newWindowId, toSet(tabs, 'id'));
     const tab = await chrome.tabs.get(tabId);
-    await UpdateMap(TabDB, DB.TabDB.TabsMap, tabId, tab);
+    await tabs$db.updateValue(tabId, tab);
     await sendMsgToApp(MsgKey.DataReload);
     console.log('tabs onAttached --->>', tabId, attachInfo);
 });
@@ -129,6 +130,13 @@ chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
         await UpdateMap(WindowDB, DB.WindowDB.AllWindowTabsMap, windowId, () => {
             return new Set(tabs.map((tab) => tab.id));
         });
+
+        const { groupId } = await getTabById(tabId);
+        await tabGroups$db.updateValue(groupId, ({ tabs, ...rest }) => {
+            const set = new Set(tabs);
+            set.delete(tabId);
+            return { ...rest, lastAccessed: Date.now(), tabs: Array.from(set) };
+        });
     }
     await sendMsgToApp(MsgKey.DataReload);
     console.log('tabs onRemoved --->>', tabId, removeInfo);
@@ -140,7 +148,7 @@ chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     // 视为favIconUrl获取到了, 才会认为更新成功
     if (changeInfo?.status === 'complete') {
-        const { pinned, index } = tab;
+        const { pinned, index, groupId } = tab;
         await updateURLWithTab(tab);
         await updateTab(tabId, tab);
         await UpdateMap(WindowDB, DB.WindowDB.AllWindowTabsMap, tab.windowId, (set = new Set()) => {
@@ -151,6 +159,15 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             }
             return set;
         });
+
+        if (groupId > -1) {
+            await tabGroups$db.updateValue(groupId, (item) => {
+                const { tabs, ...rest } = item;
+                const set = new Set(tabs);
+                set.add(tabId);
+                return { ...rest, lastAccessed: Date.now(), tabs: Array.from(set) };
+            });
+        }
         await sendMsgToApp(MsgKey.DataReload);
     }
 

@@ -1,8 +1,8 @@
 import { get, isPlainObject, update } from 'lodash-es';
-import { TabGroupsDB } from '@root/src/db';
 import { upArray } from '@root/src/shared/utils';
 
 class DBStore {
+    static Break = Symbol('break');
     db: LocalForage;
     isToggleNumberStringKey: boolean;
 
@@ -23,28 +23,39 @@ class DBStore {
 
     nts = this.numberToString;
 
-    async getValue(key: string): Promise<any> {
-        return await this.db.getItem(String(key));
+    async getValue(key: string | number): Promise<any> {
+        return (await this.db.getItem(String(key))) || void 0;
     }
 
-    async getMapValue(key: string): Promise<Map<string | number, any>> {
+    async getMapValue(key: string | number): Promise<Map<string | number, any>> {
         return (await this.db.getItem(String(key))) ?? new Map();
     }
 
-    async getSetValue(key: string): Promise<Set<any>> {
+    async getSetValue(key: string | number): Promise<Set<any>> {
         return (await this.db.getItem(String(key))) ?? new Set();
     }
 
-    async getArrayValue(key: string): Promise<any[]> {
+    async getArrayValue(key: string | number): Promise<any[]> {
         return (await this.db.getItem(String(key))) ?? [];
     }
 
-    async getObjectValue(key: string): Promise<Row> {
+    async getObjectValue(key: string | number): Promise<Row> {
         return (await this.db.getItem(String(key))) ?? {};
     }
 
-    async setValue(key: string, value: any) {
+    async setValue(key: string | number, value: any) {
+        if (value === DBStore.Break) return;
         await this.db.setItem(String(key), value);
+    }
+
+    async byIds(ids: string[], interator?: (item: any, key: string) => any) {
+        const result = [];
+        for await (const id of ids) {
+            const item = await this.getValue(id);
+            const value = (await interator?.(item, id)) ?? item;
+            result.push(value);
+        }
+        return result;
     }
 
     async getAllMap() {
@@ -94,12 +105,16 @@ class DBStore {
     async updateValue(key: string | number, value: Set<any>);
     async updateValue(key: string | number, value: any[]);
     async updateValue(key: string | number, value: Record<string | number, any>);
-    async updateValue(key: string | number, updater: () => any);
+    async updateValue(key: string | number, updater: (item: any) => any);
     async updateValue(...args): Promise<void> {
         const [key, newValue] = args;
         const value = await this.getValue(key);
         const updater = typeof newValue === 'function' ? newValue : (value) => this.extend(value, newValue);
         const result = await updater?.(value);
+
+        // 不写入值
+        if (result === DBStore.Break) return;
+
         // console.log('------>>> tabGroups updateValue', result, value, newValue);
         await this.setValue(key, result);
     }
@@ -111,16 +126,16 @@ class DBStore {
         }
     }
 
-    async updateRows(rows: Rows, key: string | number, updater?: (item: Row) => any) {
+    async updateRows(rows: Rows = [], key: string | number, updater?: (item: Row) => any) {
         for await (const row of rows) {
             const key$ = get(row, key);
-            await this.updateValue(key$, (await updater(row)) ?? row);
+            await this.updateValue(key$, updater?.(row) ?? row);
         }
     }
 
-    async updateMap(map: Map<string | number, any>) {
+    async updateMap(map: Map<string | number, any>, updater?: (item: Row) => any) {
         for await (const [key, value] of [...map.entries()]) {
-            await this.updateValue(key, value);
+            await this.updateValue(key, updater?.(value) ?? value);
         }
     }
 
@@ -131,10 +146,9 @@ class DBStore {
         }
     }
 
-    async remove(key: string | number | (string | number)[]) {
-        const keys = upArray(key);
-        console.log('------>>>o', keys);
-        for await (const key of keys) {
+    async remove(keys: string | number | (string | number)[]) {
+        const keys$ = upArray(keys);
+        for await (const key of keys$) {
             await this.db.removeItem(String(key));
         }
     }
@@ -144,4 +158,10 @@ class DBStore {
     }
 }
 
+// 存储group相关信息
+export const TabGroupsDB = localforage.createInstance({ name: 'ruyi-tab-groups' });
+// 存储tab相关信息
+export const TabsDB = localforage.createInstance({ name: 'ruyi-tabs2' });
+
 export const tabGroups$db = new DBStore(TabGroupsDB, true);
+export const tabs$db = new DBStore(TabsDB, true);

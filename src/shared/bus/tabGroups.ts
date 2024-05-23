@@ -1,5 +1,4 @@
-import { tabGroups$db } from '@root/src/DBStore';
-import { DB, GetMap, TabDB } from '@root/src/db';
+import { tabGroups$db, tabs$db } from '@root/src/DBStore';
 
 export const updateTabGroups = async (tabGroups?: chrome.tabGroups.TabGroup) => {
     const tabGroups$ = tabGroups ?? (await chrome.tabGroups.query({}));
@@ -23,10 +22,10 @@ export const cleanupDuplicateTabGroups = async () => {
     const groupsMap = new Map();
 
     for await (const group of tabGroups) {
-        const tabsMap = await GetMap(TabDB, DB.TabDB.TabsMap);
-        const { tabs, active } = group;
+        const { tabs: tabIds, active } = group;
+        const tabs = await tabs$db.byIds(tabIds);
         const urlkeys = tabs
-            .map((tabId) => tabsMap.get(tabId)?.url)
+            .map((tab) => tab.url)
             .sort()
             .join(',');
 

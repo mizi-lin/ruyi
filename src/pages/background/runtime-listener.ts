@@ -2,6 +2,8 @@ import { updateURLOriginFaviconMap, updateURLWithHistory } from '@root/src/share
 import { cleanupDuplicateHistoryWindows, updateWindow } from '@root/src/shared/bus/windows';
 import { cleanupDuplicateTabGroups, getTabsWithoutEmpty, updateTabGroups, updateTabs } from '@root/src/shared/bus';
 import { initSetting } from '@root/src/shared/bus/setting';
+import { DB, GetMap, TabDB } from '@root/src/db';
+import { tabs$db } from '@root/src/DBStore';
 
 /**
  * 安装时触发

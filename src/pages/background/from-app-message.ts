@@ -4,7 +4,7 @@ import { asyncMap, groupBy, insertSet, toMap } from '@root/src/shared/utils';
 import { SendTask } from '../app/business';
 import { install } from './runtime-listener';
 import { MsgKey } from '@root/src/constants';
-import { tabGroups$db } from '@root/src/DBStore';
+import { tabGroups$db, tabs$db } from '@root/src/DBStore';
 
 const funcMap = {
     /**
@@ -106,7 +106,7 @@ async function openWindow({ windowId: sourceWindowId, active, tabs: oldTabs = []
 
     // 遍历当前窗口的所有标签页，同步更新信息
     for await (const tab of tabs) {
-        await UpdateMap(TabDB, DB.TabDB.TabsMap, tab.id, async () => {
+        await tabs$db.updateValue(tab.id, async () => {
             const { url, pendingUrl } = tab;
             const url$ = url || pendingUrl;
             const old = oldMap.get(url$);
@@ -168,8 +168,7 @@ async function moveTab({ sourceWindowId, targetWindowId, tabId, index }, sendRes
         await chrome.tabs.get(tabId);
         await chrome.tabs.move(tabId, { windowId: targetWindowId, index });
     } catch (e) {
-        const tabsMap = await GetMap(TabDB, DB.TabDB.TabsMap);
-        const { url } = tabsMap.get(tabId) ?? {};
+        const { url } = (await tabs$db.getValue(tabId)) ?? {};
         url && (await chrome.tabs.create({ url, windowId: targetWindowId, index }));
     }
 }
@@ -261,7 +260,7 @@ export async function removeVariousTabs({ tabs }) {
 export async function removeTab({ windowId, groupId, tab, active }) {
     // 删除 tab
     if (active) {
-        return await chrome.tabs.remove(tab.id);
+        await chrome.tabs.remove(tab.id);
     }
 
     if (groupId) {
@@ -271,10 +270,9 @@ export async function removeTab({ windowId, groupId, tab, active }) {
         } else {
             try {
                 await chrome.tabs.remove(tab.id);
-            } catch (e) {
-                const tabs$ = tabs.filter(({ id }) => id !== tab.id);
-                await tabGroups$db.updateValue(groupId, { tabs: tabs$ });
-            }
+            } catch (e) {}
+            const tabs$ = tabs.filter((id) => id !== tab.id);
+            await tabGroups$db.updateValue(groupId, { tabs: tabs$ });
         }
     }
 
@@ -297,7 +295,9 @@ export async function pinnedTab({ tab, active }) {
  * 重建数据
  */
 export async function rebuild(options, sendRespnse, sender) {
-    await install();
+    // await install();
+    const tabsMap = await GetMap(TabDB, DB.TabDB.TabsMap);
+    await tabs$db.updateMap(tabsMap);
     await sendMsgToApp(MsgKey.DataReload);
 }
 

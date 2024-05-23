@@ -1,20 +1,19 @@
-import { useRemoveTab } from './../RyWindow/store';
-import { tabGroups } from './../../../DBStore';
-import { tabGroups$db } from '@root/src/DBStore';
+import { tabGroups$db, tabs$db } from '@root/src/DBStore';
 import { orderBy } from 'lodash-es';
 import { reloadStore } from '../store';
-import { DB, GetMap, TabDB } from '@root/src/db';
+import { asyncMap } from '@root/src/shared/utils';
 
 export const tabGroupsStore = selector({
     key: 'tabGroupsStore',
     get: async ({ get }) => {
         get(reloadStore);
-        const tabsMap = await GetMap(TabDB, DB.TabDB.TabsMap);
         const tabGroups$ = await tabGroups$db.getAll();
 
-        const tabGroups = tabGroups$.map((item) => {
+        const tabGroups = await asyncMap(tabGroups$, async (item) => {
             const { tabs: tabIds, ...rest } = item;
-            const tabs = tabIds.map((tabId) => tabsMap.get(tabId) ?? { id: tabId });
+            const tabs = await tabs$db.byIds(tabIds, (item, key) => {
+                return item ?? { id: key };
+            });
             return { ...rest, tabs };
         });
 

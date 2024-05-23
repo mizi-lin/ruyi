@@ -1,11 +1,11 @@
-import { faviconURL, getFaviconUrl } from '@root/src/shared/bus';
-import { DB, GetMap, GetSet, SettingDB, SettingDBKeys, TabDB, UrlDB, WindowDB } from '@root/src/db';
+import { getFaviconUrl } from '@root/src/shared/bus';
+import { DB, GetMap, GetSet, SettingDB, SettingDBKeys, WindowDB } from '@root/src/db';
 import { orderBy } from 'lodash-es';
 import { reloadStore, topHistoryStore } from '../store';
-import { WindowSetting } from '@root/src/constants';
 import { atomFamily } from 'recoil';
 import { toMap } from '@root/src/shared/utils';
 import { asyncMap } from '@root/src/shared/utils/common';
+import { tabs$db } from '@root/src/DBStore';
 
 export const windowSettingAtom = atomFamily({
     key: 'ruyi/windows/setting',
@@ -50,28 +50,24 @@ export const windowsStore = selector({
         const all = await GetMap(WindowDB, DB.WindowDB.AllWindowTabsMap);
         // 当前活跃的窗口
         const actives = await GetSet(WindowDB, DB.WindowDB.ActiveWindowsSet);
-        // Tabs
-        const tabMap = await GetMap(TabDB, DB.TabDB.TabsMap);
         // Window
         const currentWindowId = await WindowDB.getItem(DB.WindowDB.CurrentId);
 
-        let windows = [...all.entries()]
-            .map(([windowId, tabIds]) => {
-                const tabs = [...tabIds].map((tabId) => {
-                    return tabMap.get(tabId) ?? { id: tabId };
-                });
-                const active = actives.has(windowId);
-                const current = windowId === currentWindowId;
+        let windows = await asyncMap([...all.entries()], async ([windowId, tabIds]) => {
+            const tabs = await tabs$db.byIds([...tabIds], (item, key) => {
+                return item ?? { id: key };
+            });
+            const active = actives.has(windowId);
+            const current = windowId === currentWindowId;
 
-                if (!showHistoryWindows && !active) return void 0;
-                if (!showActiveWindows && active) return void 0;
+            if (!showHistoryWindows && !active) return void 0;
+            if (!showActiveWindows && active) return void 0;
 
-                return { windowId, tabs, active, current, title: current ? 'Current Window' : '' };
-            })
-            .filter(Boolean);
+            return { windowId, tabs, active, current, title: current ? 'Current Window' : '' };
+        });
 
         // 按照状态进行排序
-        windows = orderBy(windows, ['topHistory', 'current', 'active'], ['desc', 'desc', 'desc']);
+        windows = orderBy(windows.filter(Boolean), ['topHistory', 'current', 'active'], ['desc', 'desc', 'desc']);
 
         if (showTopViewer) {
             windows = [topUrls, topPages, topOrigins, ...windows];
