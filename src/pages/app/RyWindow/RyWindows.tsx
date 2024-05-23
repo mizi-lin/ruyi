@@ -56,7 +56,7 @@ export const Toolbar = ({ title, windowId, tabs, active, current, topHistory }) 
     );
 };
 
-export const TabItem = ({ tab, windowId, active, current, topHistory }) => {
+export const TabItem = ({ tab, windowId, groupId, active, current, topHistory }) => {
     const search = useRecoilValue(windowSearchAtom);
     const isSearch = search && tabMatcher(tab, search);
 
@@ -108,7 +108,7 @@ export const TabItem = ({ tab, windowId, active, current, topHistory }) => {
                             </Tooltip>
                             {!topHistory && (
                                 <Tooltip title={`${active ? '关闭' : '删除'}该标签页`}>
-                                    <CloseOutlined onClick={() => closeTab({ tab, windowId, active })} />
+                                    <DeleteOutlined onClick={() => closeTab({ tab, windowId, groupId, active })} />
                                 </Tooltip>
                             )}
                         </div>

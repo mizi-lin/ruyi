@@ -104,6 +104,7 @@ const RyTabGroups = () => {
                                         <TabItem
                                             tab={tab}
                                             windowId={tab.windowId}
+                                            groupId={groupId}
                                             current={current}
                                             active={item.active}
                                             topHistory={false}

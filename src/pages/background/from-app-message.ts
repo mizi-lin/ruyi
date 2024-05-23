@@ -258,11 +258,26 @@ export async function removeVariousTabs({ tabs }) {
 /**
  * 移除标签页
  */
-export async function removeTab({ windowId, tab, active }) {
+export async function removeTab({ windowId, groupId, tab, active }) {
     // 删除 tab
     if (active) {
         return await chrome.tabs.remove(tab.id);
     }
+
+    if (groupId) {
+        const { tabs } = await tabGroups$db.getValue(groupId);
+        if (tabs?.length === 1) {
+            await removeTabGroup({ tabGroupId: groupId, record: { active: false } });
+        } else {
+            try {
+                await chrome.tabs.remove(tab.id);
+            } catch (e) {
+                const tabs$ = tabs.filter(({ id }) => id !== tab.id);
+                await tabGroups$db.updateValue(groupId, { tabs: tabs$ });
+            }
+        }
+    }
+
     await UpdateMap(WindowDB, DB.WindowDB.AllWindowTabsMap, windowId, (tabs = new Set()) => {
         tabs.delete(tab.id);
         return tabs;
@@ -409,8 +424,6 @@ export async function openTabGroupInCurrentWindow({ tabGroupId, record }) {
     }
 
     const { id: currentWindowId } = await chrome.windows.getCurrent();
-
-    console.log('openTabGroupInCurrentWindow', windowId, currentWindowId);
 
     if (currentWindowId !== windowId) {
         await chrome.tabGroups.move(tabGroupId, { windowId: currentWindowId, index: -1 });
