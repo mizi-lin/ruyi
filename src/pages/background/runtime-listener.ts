@@ -1,5 +1,5 @@
 import { updateURLOriginFaviconMap, updateURLWithHistory } from '@root/src/shared/bus/urls';
-import { cleanupDuplicateHistoryWindows, updateWindow } from '@root/src/shared/bus/windows';
+import { cleanupDuplicateHistoryWindows, cleanupDuplicateWindows, updateWindow, updateWindows } from '@root/src/shared/bus/windows';
 import { cleanupDuplicateTabGroups, getTabsWithoutEmpty, updateTabGroups, updateTabs } from '@root/src/shared/bus';
 import { initSetting } from '@root/src/shared/bus/setting';
 
@@ -19,13 +19,13 @@ export async function install() {
     await updateURLWithHistory();
 
     // 更新Windows相关信息
-    await updateWindow();
+    await updateWindows();
 
     // 获取 TabGroups
     await updateTabGroups();
 
     // 清除重复的窗口记录
-    await cleanupDuplicateHistoryWindows();
+    await cleanupDuplicateWindows();
 
     // 清除重复的标签组
     await cleanupDuplicateTabGroups();

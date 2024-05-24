@@ -1,7 +1,8 @@
 import { get, isPlainObject, update } from 'lodash-es';
 import { upArray } from '@root/src/shared/utils';
 
-class DBStore {
+export type DBKey = string | number;
+export class DBStore {
     static Break = Symbol('break');
     db: LocalForage;
     isToggleNumberStringKey: boolean;
@@ -23,32 +24,32 @@ class DBStore {
 
     nts = this.numberToString;
 
-    async getValue(key: string | number): Promise<any> {
+    async getValue(key: DBKey): Promise<any> {
         return (await this.db.getItem(String(key))) || void 0;
     }
 
-    async getMapValue(key: string | number): Promise<Map<string | number, any>> {
+    async getMapValue(key: DBKey): Promise<Map<DBKey, any>> {
         return (await this.db.getItem(String(key))) ?? new Map();
     }
 
-    async getSetValue(key: string | number): Promise<Set<any>> {
+    async getSetValue(key: DBKey): Promise<Set<any>> {
         return (await this.db.getItem(String(key))) ?? new Set();
     }
 
-    async getArrayValue(key: string | number): Promise<any[]> {
+    async getArrayValue(key: DBKey): Promise<any[]> {
         return (await this.db.getItem(String(key))) ?? [];
     }
 
-    async getObjectValue(key: string | number): Promise<Row> {
+    async getObjectValue(key: DBKey): Promise<Row> {
         return (await this.db.getItem(String(key))) ?? {};
     }
 
-    async setValue(key: string | number, value: any) {
+    async setValue(key: DBKey, value: any) {
         if (value === DBStore.Break) return;
         await this.db.setItem(String(key), value);
     }
 
-    async byIds(ids: string[], interator?: (item: any, key: string) => any) {
+    async byIds(ids: string[], interator?: (item: any, key: DBKey) => any) {
         const result = [];
         for await (const id of ids) {
             const item = await this.getValue(id);
@@ -74,8 +75,8 @@ class DBStore {
         return all;
     }
 
-    extend(old: Map<string | number, any>, value: Map<string | number, any>);
-    extend(old: Map<string | number, any>, value: Record<string | number, any>);
+    extend(old: Map<DBKey, any>, value: Map<DBKey, any>);
+    extend(old: Map<DBKey, any>, value: Record<DBKey, any>);
     extend(old: Set<any>, value: Set<any>);
     extend(old: Set<any>, value: any[]);
     extend(old: Row, value: Row);
@@ -101,16 +102,16 @@ class DBStore {
         }
     }
 
-    async updateValue(key: string | number, value: Map<string | number, any>);
-    async updateValue(key: string | number, value: Set<any>);
-    async updateValue(key: string | number, value: any[]);
-    async updateValue(key: string | number, value: Record<string | number, any>);
-    async updateValue(key: string | number, updater: (item: any) => any);
+    async updateValue(key: DBKey, value: Map<DBKey, any>);
+    async updateValue(key: DBKey, value: Set<any>);
+    async updateValue(key: DBKey, value: any[]);
+    async updateValue(key: DBKey, value: Record<DBKey, any>);
+    async updateValue(key: DBKey, updater: (item: any, key: DBKey) => any);
     async updateValue(...args): Promise<void> {
         const [key, newValue] = args;
         const value = await this.getValue(key);
         const updater = typeof newValue === 'function' ? newValue : (value) => this.extend(value, newValue);
-        const result = await updater?.(value);
+        const result = await updater?.(value, key);
 
         // 不写入值
         if (result === DBStore.Break) return;
@@ -119,38 +120,44 @@ class DBStore {
         await this.setValue(key, result);
     }
 
-    async setRows(rows: Rows, key: string | number, updater?: (item: Row) => any) {
+    async setRows(rows: Rows, key: DBKey, updater?: (item: Row, key: DBKey) => any) {
         for await (const row of rows) {
             const key$ = get(row, key);
-            await this.setValue(key$, (await updater(row)) ?? row);
+            await this.setValue(key$, (await updater(row, key$)) ?? row);
         }
     }
 
-    async updateRows(rows: Rows = [], key: string | number, updater?: (item: Row) => any) {
+    async updateRows(rows: Rows = [], key: DBKey, updater?: (item: Row, key: DBKey) => any) {
         for await (const row of rows) {
             const key$ = get(row, key);
-            await this.updateValue(key$, (await updater?.(row)) ?? row);
+            await this.updateValue(key$, (await updater?.(row, key$)) ?? row);
         }
     }
 
-    async updateMap(map: Map<string | number, any>, updater?: (item: Row) => any) {
+    async updateMap(map: Map<DBKey, any>, updater?: (item: Row, key: DBKey) => any) {
         for await (const [key, value] of [...map.entries()]) {
-            await this.updateValue(key, (await updater?.(value)) ?? value);
+            await this.updateValue(key, (await updater?.(value, key)) ?? value);
         }
     }
 
-    async updateAll(updater: (item: any) => any) {
+    async updateAll(updater: (item: any, key: DBKey) => any) {
         const all = await this.getAllMap();
         for await (const [key, item] of [...all.entries()]) {
-            this.setValue(key, await updater(item));
+            this.setValue(key, await updater(item, key));
         }
     }
 
-    async remove(keys: string | number | (string | number)[]) {
+    async remove(keys: DBKey | DBKey[]) {
         const keys$ = upArray(keys);
         for await (const key of keys$) {
             await this.db.removeItem(String(key));
         }
+    }
+
+    async removeRows(rows: Rows, key: DBKey) {
+        if (!rows?.length) return;
+        const keys = rows.map((row) => get(row, key));
+        await this.remove(keys);
     }
 
     async clear() {
@@ -158,10 +165,13 @@ class DBStore {
     }
 }
 
-// 存储group相关信息
-export const TabGroupsDB = localforage.createInstance({ name: 'ruyi-tab-groups' });
-// 存储tab相关信息
+// 存储tab标签相关信息
 export const TabsDB = localforage.createInstance({ name: 'ruyi-tabs2' });
+// 存储window窗口相关信息
+export const WindowsDB = localforage.createInstance({ name: 'ruyi-windows2' });
+// 存储group标签组
+export const TabGroupsDB = localforage.createInstance({ name: 'ruyi-tab-groups' });
 
-export const tabGroups$db = new DBStore(TabGroupsDB, true);
+export const windows$db = new DBStore(WindowsDB, true);
 export const tabs$db = new DBStore(TabsDB, true);
+export const tabGroups$db = new DBStore(TabGroupsDB, true);

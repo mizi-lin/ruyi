@@ -1,6 +1,7 @@
 import { DB, GetMap, UrlDB } from '@root/src/db';
 import { faviconURL } from './common';
-import { tabs$db } from '@root/src/DBStore';
+import { tabs$db, type DBKey } from '@root/src/DBStore';
+import { get } from 'lodash-es';
 
 /**
  * 判断空tab
@@ -28,6 +29,11 @@ export async function getTabById(tabId) {
     return tab;
 }
 
+export async function getTabIdsByQuery(queryInfo: chrome.tabs.QueryInfo, isSet = true) {
+    const tabIds = await chrome.tabs.query(queryInfo).then((tabs) => tabs.map((tab) => tab.id));
+    return isSet ? new Set(tabIds) : tabIds;
+}
+
 /**
  * 更新tabs
  */
@@ -49,6 +55,20 @@ export const updateTab = async (tabId, tab: chrome.tabs.Tab) => {
         return { ...item, ...tab, id: tabId };
     });
 };
+
+export async function getKeyByTabIds(tabIds: DBKey[] | Set<DBKey> | Map<DBKey, Row>, key: string) {
+    const tabIds$ =
+        tabIds instanceof Set ? Array.from(tabIds) : tabIds instanceof Set ? [...tabIds.values()] : Array.isArray(tabIds) ? tabIds : [];
+    if (!tabIds$?.length) return '';
+    const tabsMap = await tabs$db.getAllMap();
+    return tabIds$
+        .map((id) => {
+            const tab = tabsMap.get(id);
+            return get(tab, key);
+        })
+        .sort()
+        .join(',');
+}
 
 export const getFaviconUrl = async (tab: chrome.tabs.Tab) => {
     const { id, favIconUrl, pendingUrl, url = pendingUrl } = tab;

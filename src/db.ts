@@ -132,20 +132,3 @@ export enum SettingDBKeys {
     // tabs 显示浏览记录
     TabsShowTopViewer = 'ruyi.tabs.show.top.viewer'
 }
-
-export const dbGetTabsByWindowId = async (windowId) => {
-    const tabMap = await tabGroups$db.getAllMap();
-    const windowMap = await GetMap(WindowDB, DB.WindowDB.AllWindowTabsMap);
-    const tabs = [...windowMap.get(windowId)];
-    return tabs.map((tabId) => tabMap.get(tabId));
-};
-
-export const dbRemoveOnlyEmptyTabOfWindow = async (windowId) => {
-    const tabs = await dbGetTabsByWindowId(windowId);
-
-    const emptyTabs = tabs.filter(isEmptyTab);
-
-    if (emptyTabs.length === tabs.length) {
-        await RemoveMap(WindowDB, DB.WindowDB.AllWindowTabsMap, windowId);
-    }
-};

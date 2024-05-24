@@ -1,11 +1,11 @@
 import { getFaviconUrl } from '@root/src/shared/bus';
 import { DB, GetMap, GetSet, SettingDB, SettingDBKeys, WindowDB } from '@root/src/db';
-import { orderBy } from 'lodash-es';
+import { groupBy, orderBy } from 'lodash-es';
 import { reloadStore, topHistoryStore } from '../store';
 import { atomFamily } from 'recoil';
-import { toMap } from '@root/src/shared/utils';
+import { toMap, toObj } from '@root/src/shared/utils';
 import { asyncMap } from '@root/src/shared/utils/common';
-import { tabs$db } from '@root/src/DBStore';
+import { tabGroups$db, tabs$db, windows$db } from '@root/src/DBStore';
 
 export const windowSettingAtom = atomFamily({
     key: 'ruyi/windows/setting',
@@ -38,6 +38,51 @@ export const windowSearchAtom = atom({
 
 export const windowsStore = selector({
     key: 'ruyi/windows',
+    get: async ({ get }) => {
+        get(reloadStore);
+        const { topOrigins, topPages, topUrls } = get(topHistoryStore);
+        const showHistoryWindows = get(windowSettingAtom(SettingDBKeys.TabsShowHistoryWindows));
+        const showActiveWindows = get(windowSettingAtom(SettingDBKeys.TabsShowActiveWindows));
+        const showTopViewer = get(windowSettingAtom(SettingDBKeys.TabsShowTopViewer));
+
+        const windows$ = await windows$db.getAll();
+        const currentWindowId = await WindowDB.getItem(DB.WindowDB.CurrentId);
+
+        const tops = showTopViewer ? [topOrigins, topPages, topUrls] : [];
+        const actives = showActiveWindows ? windows$.filter((item) => item.active) : [];
+        const histories = showHistoryWindows ? windows$.filter((item) => !item.active) : [];
+        const all = !(showActiveWindows || showHistoryWindows) ? windows$ : [];
+
+        const windows$1 = [...tops, ...actives, ...histories, ...all];
+        const windows$2 = await asyncMap(windows$1, async (window) => {
+            const { id, windowId = id, active = false, tabs, topHistory = false } = window;
+            const tabs$1 = topHistory ? tabs : await tabs$db.byIds([...tabs]);
+            const tabs$2 = await asyncMap(tabs$1, async (item: chrome.tabs.Tab, key) => {
+                if (!item) return;
+                const favIconUrl = await getFaviconUrl(item);
+                return { ...item, favIconUrl };
+            });
+
+            const tabs$3 = tabs$2.filter(Boolean);
+            const current = windowId === currentWindowId;
+
+            const group$1 = Object.keys(groupBy(tabs$3, 'groupId')).filter((key) => key !== '-1');
+            const group$2 = (await tabGroups$db.byIds(group$1)).filter(Boolean);
+            const group = toObj(group$2, 'id');
+
+            return { ...window, windowId, active, current, topHistory, group, tabs: tabs$2.filter(Boolean) };
+        });
+
+        const windows$3 = orderBy(windows$2, ['topHistory', 'current', 'active'], ['desc', 'desc', 'desc']);
+
+        console.log('windows$3 ------------------------------->>>', windows$3);
+
+        return { data: windows$3 };
+    }
+});
+
+export const windowsStore1 = selector({
+    key: 'ruyi/windows1',
     get: async ({ get }) => {
         get(reloadStore);
 

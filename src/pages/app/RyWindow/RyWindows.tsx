@@ -127,7 +127,7 @@ export const TabItem = ({ tab, windowId, groupId, active, current, topHistory })
             overlayStyle={{ maxWidth: 400, wordBreak: 'break-word' }}
         >
             <div className={clx(styles.item, { [styles.search]: isSearch })} onClick={() => openTab({ active, windowId, tab })}>
-                <HolderOutlined />
+                {!tab?.topHistory && <HolderOutlined />}
                 <Badge dot={active && tab.pinned} color={Constants.PRIAMRY_COLOR}>
                     <Avatar src={tab?.favIconUrl} icon={nonFavicon} size={20} />
                 </Badge>
@@ -141,6 +141,8 @@ export const TabItem = ({ tab, windowId, groupId, active, current, topHistory })
 export const DraggableItem = ({ tab, inx, window }) => {
     const search = useRecoilValue(windowSearchAtom);
     const onlyMatched = useRecoilValueLoadable(windowSettingAtom(SettingDBKeys.TabsOnlyMatched));
+    const isGroup = tab?.groupId > 0;
+    const group = window.group?.[tab.groupId] ?? {};
     if (onlyMatched?.contents && search && !tabMatcher(tab, search)) return <></>;
     return (
         <Draggable key={tab?.id} draggableId={`${tab?.id}`} index={inx}>
@@ -156,6 +158,7 @@ export const DraggableItem = ({ tab, inx, window }) => {
                         className={clx(styles.tabs, { [styles.group]: tab?.groupId > 0 })}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
+                        data-color={group.color}
                     >
                         <TabItem tab={tab} {...window} />
                     </div>

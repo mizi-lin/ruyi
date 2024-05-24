@@ -1,5 +1,3 @@
-import { DB, GetMap, WindowDB } from '@root/src/db';
-
 export const getAppUrl = () => {
     return chrome.runtime.getURL('src/pages/app/index.html');
 };

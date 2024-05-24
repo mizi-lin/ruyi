@@ -1,10 +1,9 @@
 import { getAppUrl, sendMsgToApp } from './utils/bus';
-import { DB, GetMap, GetSet, RemoveMap, RemoveSet, TabDB, UpdateMap, WindowDB } from '@root/src/db';
 import { asyncMap, groupBy, insertSet, toMap } from '@root/src/shared/utils';
 import { SendTask } from '../app/business';
-import { install } from './runtime-listener';
 import { MsgKey } from '@root/src/constants';
-import { tabGroups$db, tabs$db } from '@root/src/DBStore';
+import { tabGroups$db, tabs$db, windows$db } from '@root/src/DBStore';
+import { cleanupDuplicateWindows, isActiveWindowByChrome } from '@root/src/shared/bus';
 
 const funcMap = {
     /**
@@ -97,7 +96,7 @@ async function openWindow({ windowId: sourceWindowId, active, tabs: oldTabs = []
     await chrome.windows.create({ url: urls, incognito: false });
 
     // 如果源窗口ID存在，删除源窗口的所有标签页
-    sourceWindowId && (await RemoveMap(WindowDB, DB.WindowDB.AllWindowTabsMap, sourceWindowId));
+    sourceWindowId && (await windows$db.remove(sourceWindowId));
 
     // 获取当前窗口的标签页信息，并更新每个标签页
     const { tabs } = await chrome.windows.getCurrent({ populate: true });
@@ -135,18 +134,20 @@ async function removeWindow({ windowId, active }) {
         // @todo 验证 windowId 是否为活跃状态
         return await chrome.windows.remove(windowId);
     }
-    await RemoveMap(WindowDB, DB.WindowDB.AllWindowTabsMap, windowId);
+
+    await windows$db.remove(windowId);
 }
 
 async function moveTab({ sourceWindowId, targetWindowId, tabId, index }, sendResponse) {
-    const isActiveTargetWindow = await isActiveWindowById(targetWindowId);
-    const isActiveSourceWindow = await isActiveWindowById(sourceWindowId);
+    const isActiveTargetWindow = await isActiveWindowByChrome(targetWindowId);
+    const isActiveSourceWindow = await isActiveWindowByChrome(sourceWindowId);
 
     // 若从历史窗口移走，删除历史记录
     !isActiveSourceWindow &&
-        (await UpdateMap(WindowDB, DB.WindowDB.AllWindowTabsMap, sourceWindowId, (value: Set<number>) => {
-            value.delete(tabId);
-            return value;
+        (await windows$db.updateValue(sourceWindowId, (item) => {
+            const { tabs, ...rest } = item;
+            tabs.delete(tabId);
+            return { ...rest, tabs, lastAccessed: Date.now() };
         }));
 
     if (!isActiveTargetWindow) {
@@ -157,8 +158,10 @@ async function moveTab({ sourceWindowId, targetWindowId, tabId, index }, sendRes
             } catch (e) {}
         }
 
-        await UpdateMap(WindowDB, DB.WindowDB.AllWindowTabsMap, targetWindowId, (value: Set<number>) => {
-            return insertSet(value, index, tabId);
+        await windows$db.updateValue(targetWindowId, (item) => {
+            const { tabs, ...rest } = item;
+            const tabs$ = insertSet(tabs, index, tabId);
+            return { ...rest, tabs: tabs$, lastAccessed: Date.now() };
         });
 
         return;
@@ -215,30 +218,18 @@ export async function existTab(tabId) {
 }
 
 /**
- * 判断 window 是否活跃
- */
-export async function isActiveWindowById(windowId) {
-    const activeWindows = await GetSet(WindowDB, DB.WindowDB.ActiveWindowsSet);
-    return activeWindows.has(windowId);
-}
-
-/**
  * 删除任意来源的标签页
  * - 搜索结果标签页
  */
 export async function removeVariousTabs({ tabs }) {
     const windowTabs = groupBy<chrome.tabs.Tab>(tabs, 'windowId');
-    const activeWindows = await GetSet(WindowDB, DB.WindowDB.ActiveWindowsSet);
 
     // 先从窗口映射中删除对应的标签页
-    for await (const [winId, tabs] of Object.entries(windowTabs)) {
+    for await (const [windowId, tabs] of Object.entries(windowTabs)) {
         // lodash groupBy 返回的key为字符串，需要转回数字
-        const windowId = +winId;
-        const isActive = activeWindows.has(windowId);
+        const isActive = isActiveWindowByChrome(windowId);
         const tabIds = tabs.map((tab) => tab.id);
-        const wtmap = await GetMap(WindowDB, DB.WindowDB.AllWindowTabsMap);
-        if (!wtmap) return;
-        const sourceSet = wtmap.get(+windowId);
+        const { tabs: sourceSet } = await windows$db.getValue(windowId);
 
         for await (const tabId of tabIds) {
             isActive && (await chrome.tabs.remove(tabId));
@@ -246,10 +237,9 @@ export async function removeVariousTabs({ tabs }) {
         }
 
         if (!sourceSet.size) {
-            await RemoveMap(WindowDB, DB.WindowDB.AllWindowTabsMap, windowId);
-            await RemoveSet(WindowDB, DB.WindowDB.ActiveWindowsSet, windowId);
+            await windows$db.updateValue(windowId, { active: false, lastAccessed: Date.now() });
         } else {
-            await UpdateMap(WindowDB, DB.WindowDB.AllWindowTabsMap, windowId, sourceSet);
+            await windows$db.updateValue(windowId, { tabs: sourceSet, lastAccessed: Date.now() });
         }
     }
 }
@@ -276,9 +266,9 @@ export async function removeTab({ windowId, groupId, tab, active }) {
         }
     }
 
-    await UpdateMap(WindowDB, DB.WindowDB.AllWindowTabsMap, windowId, (tabs = new Set()) => {
-        tabs.delete(tab.id);
-        return tabs;
+    await windows$db.updateValue(windowId, ({ tabs, ...rest }) => {
+        tabs?.delete(tab.id);
+        return { ...rest, tabs };
     });
 }
 
@@ -295,7 +285,9 @@ export async function pinnedTab({ tab, active }) {
  * 重建数据
  */
 export async function rebuild(options, sendRespnse, sender) {
-    await install();
+    // await install();
+    // await updateWindows();
+    await cleanupDuplicateWindows();
     await sendMsgToApp(MsgKey.DataReload);
 }
 
@@ -375,8 +367,7 @@ export async function removeTabGroup({ tabGroupId, record }) {
 export async function openTabGroup({ tabGroupId, record, nofocusedWindow }) {
     try {
         const { active, tabs, windowId, color, title } = record;
-        const activeWindows = await GetMap(WindowDB, DB.WindowDB.ActiveWindowsSet);
-        const isActiveWindow = activeWindows.has(windowId);
+        const isActiveWindow = isActiveWindowByChrome(windowId);
 
         if (active) {
             await openTab({ windowId, active: isActiveWindow, tab: tabs?.[0] });
@@ -415,7 +406,6 @@ export async function openTabGroup({ tabGroupId, record, nofocusedWindow }) {
  */
 export async function openTabGroupInCurrentWindow({ tabGroupId, record }) {
     const { windowId, active } = record;
-    const isActiveWindow = await isActiveWindowById(windowId);
 
     if (!active) {
         tabGroupId = await openTabGroup({ tabGroupId, record, nofocusedWindow: true });

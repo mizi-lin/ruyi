@@ -1,13 +1,18 @@
 import { MsgKey } from '@root/src/constants';
-import { UpdateSet, WindowDB, DB, RemoveSet, dbRemoveOnlyEmptyTabOfWindow, UpdateMap } from '@root/src/db';
+import { WindowDB, DB } from '@root/src/db';
 import { sendMsgToApp } from './utils/bus';
+import { windows$db } from '@root/src/DBStore';
+import { pickWindow } from '@root/src/shared/bus';
 
 /**
  * Windows Create
  */
 chrome.windows.onCreated.addListener(async (window: chrome.windows.Window) => {
     // add to activeWindows
-    await UpdateSet(WindowDB, DB.WindowDB.ActiveWindowsSet, window.id);
+
+    await windows$db.updateValue(window.id, () => {
+        return { ...pickWindow(window), active: true, lastAccessed: Date.now() };
+    });
 
     await sendMsgToApp(MsgKey.DataReload);
     console.log('window onCreate --->>', window);
@@ -17,25 +22,27 @@ chrome.windows.onCreated.addListener(async (window: chrome.windows.Window) => {
  * Windows Remove
  */
 chrome.windows.onRemoved.addListener(async (windowId) => {
-    await RemoveSet(WindowDB, DB.WindowDB.ActiveWindowsSet, windowId);
+    await windows$db.updateValue(windowId, { active: false, lastAccessed: Date.now() });
+    await sendMsgToApp(MsgKey.DataReload);
 
     /**
-     * 清除只有默认窗口的window
+     * @todo 清除只有默认窗口的window
      */
-    await dbRemoveOnlyEmptyTabOfWindow(windowId);
+    // await dbRemoveOnlyEmptyTabOfWindow(windowId);
 
-    // 关闭窗口口，打开最近聚焦的窗口, 重置当前活跃窗口
-    const windows = await chrome.windows.getLastFocused();
-    windows && (await WindowDB.setItem(DB.WindowDB.CurrentId, windows.id));
-
-    await sendMsgToApp(MsgKey.DataReload);
     console.log('window onRemoved --->>', windowId);
 });
 
+/**
+ * 聚焦窗口，更新当前窗口ID
+ */
 chrome.windows.onFocusChanged.addListener(
     async (windowId) => {
-        windowId > 0 && (await WindowDB.setItem(DB.WindowDB.CurrentId, windowId));
-        await sendMsgToApp(MsgKey.DataReload);
+        if (windowId > 0) {
+            await WindowDB.setItem(DB.WindowDB.CurrentId, windowId);
+            await windows$db.updateValue(windowId, { lastAccessed: Date.now() });
+            await sendMsgToApp(MsgKey.DataReload);
+        }
     },
     { windowTypes: ['normal'] }
 );
