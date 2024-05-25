@@ -3,7 +3,7 @@ import { asyncMap, groupBy, insertSet, toMap } from '@root/src/shared/utils';
 import { SendTask } from '../app/business';
 import { MsgKey } from '@root/src/constants';
 import { tabGroups$db, tabs$db, windows$db } from '@root/src/DBStore';
-import { cleanupDuplicateWindows, isActiveWindowByChrome } from '@root/src/shared/bus';
+import { cleanupDuplicateWindows, isActiveWindowByChrome, updateURLs } from '@root/src/shared/bus';
 
 const funcMap = {
     /**
@@ -287,7 +287,8 @@ export async function pinnedTab({ tab, active }) {
 export async function rebuild(options, sendRespnse, sender) {
     // await install();
     // await updateWindows();
-    await cleanupDuplicateWindows();
+    // await cleanupDuplicateWindows();
+    await updateURLs();
     await sendMsgToApp(MsgKey.DataReload);
 }
 

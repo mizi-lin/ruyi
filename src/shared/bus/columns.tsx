@@ -7,7 +7,7 @@ export function dateRender(formatter = 'YYYY-MM-DD HH:mm:ss', key?: string) {
     };
 }
 
-export function highlight(highlightText: string) {
+export function highlight(highlightText: string = '') {
     return (text, record) => {
         return <HighlightText text={text} highlight={highlightText} color={'#333'} backgroundColor="#ffffb8" />;
     };

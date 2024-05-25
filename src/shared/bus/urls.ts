@@ -3,6 +3,8 @@ import { DB, GetMap, GetSet, UpdateMap, UrlDB } from '@root/src/db';
 import * as cheerio from 'cheerio';
 import { sleep } from '../utils/common';
 import { toMap } from '../utils';
+import { favicons$db, tabs$db, urls$db } from '@root/src/DBStore';
+import { faviconURL } from './common';
 
 export type URLInfo = {
     // FavIcon URL
@@ -16,6 +18,40 @@ export type URLInfo = {
     // 最后更新时间
     lastAccessed: number;
 };
+
+export async function urlsByTabUpdater(newValue: Row = {}) {
+    return (oldValue: Row = {}) => {
+        const { id: tabId, windowId } = newValue;
+        const { visitCount, tabIds = new Set(), windowIds = new Set(), ...rest } = oldValue;
+        tabIds.add(tabId);
+        windowIds.add(windowId);
+        return { ...rest, tabIds, windowIds, visitCount: visitCount ?? 0 };
+    };
+}
+
+export async function updateURLs() {
+    /**
+     * 从历史记录获得
+     */
+    const result = await chrome.history.search({
+        text: '',
+        maxResults: 200000,
+        startTime: dayjs('2000-01-01').valueOf()
+    });
+
+    const data = result.map((item) => {
+        const { lastVisitTime: lastAccessed, title, url, visitCount, typedCount } = item;
+        return { lastAccessed, title, url, visitCount, typedCount };
+    });
+
+    await urls$db.updateRows(data, 'url');
+
+    /**
+     * 从TabsDB处获得补充
+     */
+    const tabs = await tabs$db.getAll();
+    await urls$db.updateRows(tabs, 'url', urlsByTabUpdater);
+}
 
 /**
  * 由Tab提供更新URLs信息
@@ -79,14 +115,14 @@ export async function updateURLWithHistory() {
  * URL Origin favicon map
  * 数据备份，用于读取不到 tab 关联信息
  */
-export async function updateURLOriginFaviconMap(tabs?: chrome.tabs.Tab[]) {
-    tabs = tabs ?? (await chrome.tabs.query({}));
+export async function updateFavicons() {
+    const tabs = await tabs$db.getAll();
     for await (const tab of tabs) {
         const { pendingUrl, url = pendingUrl, favIconUrl } = tab;
         if (url && favIconUrl) {
             const { host, hostname = host } = new URL(url);
             // 每次读写避免数据读写丢失
-            await UpdateMap(UrlDB, DB.UrlDB.URLOriginFaviconMap, hostname, favIconUrl);
+            await favicons$db.updateValue(hostname, faviconURL);
         }
     }
 }

@@ -1,7 +1,7 @@
-import { updateURLOriginFaviconMap, updateURLWithHistory } from '@root/src/shared/bus/urls';
-import { cleanupDuplicateHistoryWindows, cleanupDuplicateWindows, updateWindow, updateWindows } from '@root/src/shared/bus/windows';
+import { updateFavicons, updateURLs } from '@root/src/shared/bus/urls';
+import { cleanupDuplicateWindows, updateWindows } from '@root/src/shared/bus/windows';
 import { cleanupDuplicateTabGroups, getTabsWithoutEmpty, updateTabGroups, updateTabs } from '@root/src/shared/bus';
-import { initSetting } from '@root/src/shared/bus/setting';
+import { updateSetting } from '@root/src/shared/bus/setting';
 
 /**
  * 安装时触发
@@ -12,26 +12,26 @@ export async function install() {
 
     await updateTabs(tabs);
 
-    // origin favicon
-    await updateURLOriginFaviconMap(tabs);
-
-    // 根据history记录URL信息
-    await updateURLWithHistory();
-
     // 更新Windows相关信息
     await updateWindows();
 
     // 获取 TabGroups
     await updateTabGroups();
 
+    // URL 操作记录
+    await updateURLs();
+
+    // origin favicon
+    await updateFavicons();
+
+    // 配置信息初始化
+    await updateSetting();
+
     // 清除重复的窗口记录
     await cleanupDuplicateWindows();
 
     // 清除重复的标签组
     await cleanupDuplicateTabGroups();
-
-    // 配置信息初始化
-    await initSetting();
 
     // 读取未标记记录的URL信息
     // @todo

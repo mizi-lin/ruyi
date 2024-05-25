@@ -2,7 +2,6 @@ import { getFaviconUrl } from '@root/src/shared/bus';
 import { DB, GetMap, GetSet, SettingDB, SettingDBKeys, WindowDB } from '@root/src/db';
 import { groupBy, orderBy } from 'lodash-es';
 import { reloadStore, topHistoryStore } from '../store';
-import { atomFamily } from 'recoil';
 import { toMap, toObj } from '@root/src/shared/utils';
 import { asyncMap } from '@root/src/shared/utils/common';
 import { tabGroups$db, tabs$db, windows$db } from '@root/src/DBStore';

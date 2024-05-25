@@ -1,6 +1,6 @@
 import { DB, GetMap, UrlDB } from '@root/src/db';
 import { faviconURL } from './common';
-import { tabs$db, type DBKey } from '@root/src/DBStore';
+import { favicons$db, tabs$db, type DBKey } from '@root/src/DBStore';
 import { get } from 'lodash-es';
 
 /**
@@ -29,7 +29,7 @@ export async function getTabById(tabId) {
     return tab;
 }
 
-export async function getTabIdsByQuery(queryInfo: chrome.tabs.QueryInfo, isSet = true) {
+export async function getTabIdsByChromeQuery(queryInfo: chrome.tabs.QueryInfo, isSet = true) {
     const tabIds = await chrome.tabs.query(queryInfo).then((tabs) => tabs.map((tab) => tab.id));
     return isSet ? new Set(tabIds) : tabIds;
 }
@@ -75,7 +75,7 @@ export const getFaviconUrl = async (tab: chrome.tabs.Tab) => {
     if (favIconUrl) return favIconUrl;
     if (!url) return;
     const { host, hostname = host } = new URL(url);
-    const favicon = await GetMap(UrlDB, DB.UrlDB.URLOriginFaviconMap);
+    const favicon = await favicons$db.getValue(url);
     if (favicon.get(hostname)) return favicon.get(hostname);
     return faviconURL(url);
 };

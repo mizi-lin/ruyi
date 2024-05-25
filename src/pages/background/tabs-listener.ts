@@ -1,5 +1,5 @@
 import { MsgKey } from '@root/src/constants';
-import { getTabById, getTabIdsByQuery, isEmptyTab } from '@root/src/shared/bus/tabs';
+import { getTabById, getTabIdsByChromeQuery, isEmptyTab } from '@root/src/shared/bus/tabs';
 import { updateURLWithTab, updateTab } from '@root/src/shared/bus';
 import { sendMsgToApp } from './utils/bus';
 import { isNil } from 'lodash-es';
@@ -60,7 +60,7 @@ chrome.tabs.onMoved.addListener(async (tabId, moveInfo) => {
     });
 
     // 更新 tab windows 信息
-    const tabIdsSet = await getTabIdsByQuery({ windowId });
+    const tabIdsSet = await getTabIdsByChromeQuery({ windowId });
     await windows$db.updateValue(windowId, { tabs: tabIdsSet });
 
     // 新的 window 添加浏览记录
@@ -84,7 +84,7 @@ chrome.tabs.onMoved.addListener(async (tabId, moveInfo) => {
  */
 chrome.tabs.onDetached.addListener(async (tabId, detachInfo) => {
     const { oldWindowId } = detachInfo;
-    const tabIdsSet = await getTabIdsByQuery({ windowId: oldWindowId });
+    const tabIdsSet = await getTabIdsByChromeQuery({ windowId: oldWindowId });
     await windows$db.updateValue(oldWindowId, { tabs: tabIdsSet });
 
     // 数据重载交给 onAttached
@@ -100,7 +100,7 @@ chrome.tabs.onAttached.addListener(async (tabId, attachInfo) => {
     const { newWindowId, newPosition } = attachInfo;
 
     // 更新window信息
-    const tabIdsSet = await getTabIdsByQuery({ windowId: newWindowId });
+    const tabIdsSet = await getTabIdsByChromeQuery({ windowId: newWindowId });
     await windows$db.updateValue(newWindowId, { tabs: tabIdsSet });
 
     // 更新 tab 信息
@@ -118,7 +118,7 @@ chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
     const { windowId, isWindowClosing } = removeInfo;
     if (!isWindowClosing) {
         // @todo 只剩下空窗口的情况处理
-        const tabIdsSet = await getTabIdsByQuery({ windowId });
+        const tabIdsSet = await getTabIdsByChromeQuery({ windowId });
         await windows$db.updateValue(windowId, { tabs: tabIdsSet });
 
         // 更新 group 信息
@@ -145,7 +145,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         await updateTab(tabId, tab);
 
         // 更新 windows 信息
-        const tabIdsSet = await getTabIdsByQuery({ windowId });
+        const tabIdsSet = await getTabIdsByChromeQuery({ windowId });
         await windows$db.updateValue(windowId, { tabs: tabIdsSet, lastAccessed: Date.now() });
 
         if (groupId > -1) {

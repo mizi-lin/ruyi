@@ -1,8 +1,8 @@
+import { favicons$db } from '@root/src/DBStore';
 import { SearchTemp } from '@root/src/constants';
 import { DB, GetMap, UrlDB } from '@root/src/db';
-import { countHistory, historyMockWindow } from '@root/src/shared/bus';
+import { countHistory, faviconURL, historyMockWindow } from '@root/src/shared/bus';
 import { orderBy } from 'lodash-es';
-import { atomFamily } from 'recoil';
 
 /**
  * 全局
@@ -161,3 +161,14 @@ export const useStoreReload = () => {
         set(reloadStore, Math.random());
     });
 };
+
+export const faviconStore = selectorFamily({
+    key: 'reeval/favicon',
+    get:
+        (url: string) =>
+        async ({ get }) => {
+            const { hostname, host = hostname } = new URL(url);
+            const favicon = await favicons$db.getValue(host);
+            return favicon ? favicon : faviconURL(url);
+        }
+});

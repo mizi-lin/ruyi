@@ -1,5 +1,6 @@
 import { get, isPlainObject, update } from 'lodash-es';
 import { upArray } from '@root/src/shared/utils';
+import { SettingDB } from './db';
 
 export type DBKey = string | number;
 export class DBStore {
@@ -171,7 +172,14 @@ export const TabsDB = localforage.createInstance({ name: 'ruyi-tabs2' });
 export const WindowsDB = localforage.createInstance({ name: 'ruyi-windows2' });
 // 存储group标签组
 export const TabGroupsDB = localforage.createInstance({ name: 'ruyi-tab-groups' });
+// 存储tab标签相关信息
+export const UrlsDB = localforage.createInstance({ name: 'ruyi-urls2' });
+// 存储favicon相关信息
+export const FaviconsDB = localforage.createInstance({ name: 'ruyi-favicons' });
 
 export const windows$db = new DBStore(WindowsDB, true);
 export const tabs$db = new DBStore(TabsDB, true);
 export const tabGroups$db = new DBStore(TabGroupsDB, true);
+export const urls$db = new DBStore(UrlsDB, true);
+export const favicons$db = new DBStore(FaviconsDB, true);
+export const setting$db = new DBStore(SettingDB, true);
