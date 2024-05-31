@@ -109,13 +109,15 @@ export class DBStore {
     async updateValue(key: DBKey, value: Record<DBKey, any>);
     async updateValue(key: DBKey, updater: (item: any, key: DBKey) => any);
     async updateValue(...args): Promise<void> {
-        const [key, newValue] = args;
+        const [key, func] = args;
         const value = await this.getValue(key);
-        const updater = typeof newValue === 'function' ? newValue : (value) => this.extend(value, newValue);
-        const result = await updater?.(value, key);
+        const updater = typeof func === 'function' ? func : (value) => func;
+        const newValue = await updater?.(value, key);
 
         // 不写入值
-        if (result === DBStore.Break) return;
+        if (newValue === DBStore.Break) return;
+
+        const result = this.extend(value, newValue);
 
         // console.log('------>>> tabGroups updateValue', result, value, newValue);
         await this.setValue(key, result);

@@ -37,19 +37,24 @@
         }
 
         .group {
-            position: relative;
-            &::before {
-                position: absolute;
-                content: '';
-                left: -10px;
-                top: -4px;
-                bottom: -4px;
-                width: 100px;
-                border-left: 1px solid @primary-color;
+            margin: 0 -15px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            border-left-width: 3px;
+            // box-shadow:
+            //     rgba(50, 50, 93, 0.05) 0px 6px 12px -2px,
+            //     rgba(0, 0, 0, 0.1) 0px 3px 7px -3px;
+
+            > title {
+                display: block;
+                padding-left: 4px;
+                font-size: 16px;
+                font-weight: 100;
             }
         }
 
-        & > .tabs {
+        .tabs {
             padding: 4px;
             border-radius: 6px;
 

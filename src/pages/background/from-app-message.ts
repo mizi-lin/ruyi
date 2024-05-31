@@ -1,9 +1,12 @@
+import { tabGroups } from './../../DBStore';
+import { isTabGroup, isTabGroupByChrome } from './../../shared/bus/tabGroups';
 import { getAppUrl, sendMsgToApp } from './utils/bus';
 import { asyncMap, groupBy, insertSet, toMap } from '@root/src/shared/utils';
 import { SendTask } from '../app/business';
 import { MsgKey } from '@root/src/constants';
-import { tabGroups$db, tabs$db, windows$db } from '@root/src/DBStore';
+import { tabGroups$db, tabs$db, windows$db, urls$db } from '@root/src/DBStore';
 import { cleanupDuplicateWindows, isActiveWindowByChrome, updateURLs } from '@root/src/shared/bus';
+import { install } from './runtime-listener';
 
 const funcMap = {
     /**
@@ -56,6 +59,8 @@ const funcMap = {
     openTabGroup,
 
     openTabGroupInCurrentWindow,
+
+    removeHistory,
 
     [SendTask.rebuild]: rebuild
 };
@@ -141,6 +146,16 @@ async function removeWindow({ windowId, active }) {
 async function moveTab({ sourceWindowId, targetWindowId, tabId, index }, sendResponse) {
     const isActiveTargetWindow = await isActiveWindowByChrome(targetWindowId);
     const isActiveSourceWindow = await isActiveWindowByChrome(sourceWindowId);
+
+    // tabId 有可能是 groupId
+    if (await isTabGroupByChrome(tabId)) {
+        const groupId = tabId;
+        try {
+            await chrome.tabGroups.move(groupId, { windowId: targetWindowId, index });
+        } catch (e) {
+            console.log(e);
+        }
+    }
 
     // 若从历史窗口移走，删除历史记录
     !isActiveSourceWindow &&
@@ -285,10 +300,7 @@ export async function pinnedTab({ tab, active }) {
  * 重建数据
  */
 export async function rebuild(options, sendRespnse, sender) {
-    // await install();
-    // await updateWindows();
-    // await cleanupDuplicateWindows();
-    await updateURLs();
+    await install();
     await sendMsgToApp(MsgKey.DataReload);
 }
 
@@ -417,4 +429,19 @@ export async function openTabGroupInCurrentWindow({ tabGroupId, record }) {
     if (currentWindowId !== windowId) {
         await chrome.tabGroups.move(tabGroupId, { windowId: currentWindowId, index: -1 });
     }
+}
+
+export async function removeHistory({ record }) {
+    const { url, children } = record;
+
+    if (children?.length) {
+        for await (const { url } of children) {
+            await chrome.history.deleteUrl({ url });
+            await urls$db.updateValue(url, { active: false });
+        }
+        return;
+    }
+
+    await chrome.history.deleteUrl({ url });
+    await urls$db.updateValue(url, { active: false });
 }

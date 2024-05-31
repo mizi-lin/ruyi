@@ -13,13 +13,15 @@ import {
     searchByWindowsStore,
     tabMatcher,
     windowSettingAtom,
-    usePinnedTab
+    usePinnedTab,
+    windowsWithGroupStore
 } from './store';
 import IncognitoSvg from './assets/incognito.svg?react';
 import TabSvg from './assets/tab.svg?react';
 import SearchToolbar from './SearchToolbar';
 import { SettingDBKeys } from '@root/src/db';
 import MetTitle from '../components/MetTitle';
+import tinycolor from 'tinycolor2';
 
 const ShowHistoryWindowTip = lazy(() => import('./ShowHistoryWindowTip'));
 export const nonFavicon = <Button icon={<TabSvg width={16} height={16} />} shape={'circle'} />;
@@ -68,7 +70,7 @@ export const TabItem = ({ tab, windowId, groupId, active, current, topHistory })
         <Popover
             title={<div>{tab?.title}</div>}
             content={
-                <section style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <section style={{ display: 'flex', flexDirection: 'column', gap: 8 }} draggable={!topHistory}>
                     {/* <div style={{ fontSize: 12, color: '#999' }}>#{tab.id}</div> */}
                     <div
                         style={{
@@ -127,7 +129,7 @@ export const TabItem = ({ tab, windowId, groupId, active, current, topHistory })
             overlayStyle={{ maxWidth: 400, wordBreak: 'break-word' }}
         >
             <div className={clx(styles.item, { [styles.search]: isSearch })} onClick={() => openTab({ active, windowId, tab })}>
-                {!tab?.topHistory && <HolderOutlined />}
+                {!topHistory && <HolderOutlined />}
                 <Badge dot={active && tab.pinned} color={Constants.PRIAMRY_COLOR}>
                     <Avatar src={tab?.favIconUrl} icon={nonFavicon} size={20} />
                 </Badge>
@@ -138,11 +140,46 @@ export const TabItem = ({ tab, windowId, groupId, active, current, topHistory })
     );
 };
 
+export const DraggableGroupItem = ({ group, window, inx }) => {
+    const onlyMatched = useRecoilValueLoadable(windowSettingAtom(SettingDBKeys.TabsOnlyMatched));
+    const { contents: matched } = useRecoilValueLoadable(searchByWindowsStore);
+    if (!group.children?.length) return <></>;
+
+    const isMatched = onlyMatched ? matched?.get?.(window.id)?.matched?.has?.(group.id) : true;
+
+    if (!isMatched) return <></>;
+
+    return (
+        <Draggable key={group?.groupId} draggableId={`${group?.groupId}`} index={inx}>
+            {(provided, snapshot) => {
+                const color = tinycolor(group.color ?? 'grey');
+                const translucentColor = color.setAlpha(0.2); // 设置为50%透明
+                const translucentColorString = translucentColor.toRgbString(); // "rgba(255, 0, 0, 0.5)"
+                return (
+                    <section
+                        ref={provided.innerRef}
+                        style={{
+                            ...provided.draggableProps.style
+                        }}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                    >
+                        <section className={styles.group} style={{ borderColor: translucentColorString, cursor: 'pointer' }}>
+                            {!!group.title && <title>{group.title}</title>}
+                            {group.children.map((item) => {
+                                return <DraggableItem key={item.id} tab={item} inx={item.inx} window={window} />;
+                            })}
+                        </section>
+                    </section>
+                );
+            }}
+        </Draggable>
+    );
+};
+
 export const DraggableItem = ({ tab, inx, window }) => {
     const search = useRecoilValue(windowSearchAtom);
     const onlyMatched = useRecoilValueLoadable(windowSettingAtom(SettingDBKeys.TabsOnlyMatched));
-    const isGroup = tab?.groupId > 0;
-    const group = window.group?.[tab.groupId] ?? {};
     if (onlyMatched?.contents && search && !tabMatcher(tab, search)) return <></>;
     return (
         <Draggable key={tab?.id} draggableId={`${tab?.id}`} index={inx}>
@@ -150,15 +187,14 @@ export const DraggableItem = ({ tab, inx, window }) => {
                 return (
                     <div
                         key={tab?.id}
-                        ref={provided.innerRef}
                         style={{
                             cursor: 'pointer',
                             ...provided.draggableProps.style
                         }}
-                        className={clx(styles.tabs, { [styles.group]: tab?.groupId > 0 })}
+                        className={clx(styles.tabs)}
+                        ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
-                        data-color={group.color}
                     >
                         <TabItem tab={tab} {...window} />
                     </div>
@@ -169,9 +205,9 @@ export const DraggableItem = ({ tab, inx, window }) => {
 };
 
 export const WindowPanels = () => {
-    const { contents: windows } = useRecoilValueLoadable(windowsStore);
+    const { contents: windows } = useRecoilValueLoadable(windowsWithGroupStore);
     const { contents: matched } = useRecoilValueLoadable(searchByWindowsStore);
-    // const windows = useRecoilValue(searchByWindowsStore);
+
     const move = useMoveTab();
 
     const onDragEnd = async (result) => {
@@ -189,11 +225,11 @@ export const WindowPanels = () => {
         <Masonry className={styles.windows} options={{ gutter: 16, percentPosition: true }}>
             <DragDropContext onDragEnd={onDragEnd}>
                 {windows?.data?.map?.((window) => {
-                    const { windowId, tabs, active, current, topHistory } = window;
+                    const { children, windowId, tabs, active, current, topHistory } = window;
                     const has = matched?.has?.(windowId) ?? true;
                     if (!has) return <></>;
                     return (
-                        <Droppable key={windowId} droppableId={`${windowId}`}>
+                        <Droppable key={windowId} droppableId={`${windowId}`} isDropDisabled={topHistory}>
                             {(provided, snapshot) => {
                                 return (
                                     <section
@@ -202,13 +238,18 @@ export const WindowPanels = () => {
                                             [styles.currentWindow]: current,
                                             [styles.topHistory]: topHistory
                                         })}
+                                        data-abc="谁占了谁便宜"
                                         key={windowId}
                                         ref={provided.innerRef}
                                         {...provided.droppableProps}
                                     >
                                         <Toolbar {...window} />
-                                        {tabs.map((tab, inx) => {
-                                            return <DraggableItem key={tab.id} tab={tab} inx={inx} window={window} />;
+                                        {children.map((item, inx) => {
+                                            return item.groupId > -1 ? (
+                                                <DraggableGroupItem key={item.id} group={item} inx={inx} window={window} />
+                                            ) : (
+                                                <DraggableItem key={item.id} tab={item} inx={item.inx} window={window} />
+                                            );
                                         })}
                                     </section>
                                 );

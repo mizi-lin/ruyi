@@ -1,4 +1,15 @@
 import { tabGroups$db, tabs$db } from '@root/src/DBStore';
+import { toMap } from '../utils';
+
+export const isTabGroup = async (tabGroupId) => {
+    const tabGroupMap = await tabGroups$db.getAllMap();
+    return tabGroupMap.has(tabGroupId);
+};
+
+export const isTabGroupByChrome = async (tabGroupId) => {
+    const tabGroups = await chrome.tabGroups.query({});
+    return toMap(tabGroups, 'id').has(tabGroupId);
+};
 
 export const updateTabGroups = async (tabGroups?: chrome.tabGroups.TabGroup) => {
     const tabGroups$ = tabGroups ?? (await chrome.tabGroups.query({}));

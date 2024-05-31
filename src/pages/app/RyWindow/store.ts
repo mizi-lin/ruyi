@@ -1,10 +1,16 @@
 import { getFaviconUrl } from '@root/src/shared/bus';
-import { DB, GetMap, GetSet, SettingDB, SettingDBKeys, WindowDB } from '@root/src/db';
-import { groupBy, orderBy } from 'lodash-es';
-import { reloadStore, topHistoryStore } from '../store';
-import { toMap, toObj } from '@root/src/shared/utils';
+import { DB, SettingDB, SettingDBKeys, WindowDB } from '@root/src/db';
+import { orderBy } from 'lodash-es';
+import { reloadStore } from '../store';
+import { toMap } from '@root/src/shared/utils';
 import { asyncMap } from '@root/src/shared/utils/common';
 import { tabGroups$db, tabs$db, windows$db } from '@root/src/DBStore';
+import { atomFamily } from 'recoil';
+import { topHistoryStore } from '../RyHistory/store';
+
+export function tabMatcher(tab, search) {
+    return [tab.title, tab.url, tab.pendingUrl].join(',').toLowerCase().includes(search.toLowerCase());
+}
 
 export const windowSettingAtom = atomFamily({
     key: 'ruyi/windows/setting',
@@ -39,120 +45,106 @@ export const windowsStore = selector({
     key: 'ruyi/windows',
     get: async ({ get }) => {
         get(reloadStore);
-        const { topOrigins, topPages, topUrls } = get(topHistoryStore);
-        const showHistoryWindows = get(windowSettingAtom(SettingDBKeys.TabsShowHistoryWindows));
-        const showActiveWindows = get(windowSettingAtom(SettingDBKeys.TabsShowActiveWindows));
-        const showTopViewer = get(windowSettingAtom(SettingDBKeys.TabsShowTopViewer));
+        try {
+            const showHistoryWindows = get(windowSettingAtom(SettingDBKeys.TabsShowHistoryWindows));
+            const showActiveWindows = get(windowSettingAtom(SettingDBKeys.TabsShowActiveWindows));
+            const showTopViewer = get(windowSettingAtom(SettingDBKeys.TabsShowTopViewer));
+            const { topOrigins, topPages, topUrls } = get(topHistoryStore);
 
-        const windows$ = await windows$db.getAll();
-        const currentWindowId = await WindowDB.getItem(DB.WindowDB.CurrentId);
+            const windows$ = await windows$db.getAll();
+            const currentWindowId = await WindowDB.getItem(DB.WindowDB.CurrentId);
+            const tops = showTopViewer ? [topOrigins, topPages, topUrls] : [];
+            const actives = showActiveWindows ? windows$.filter((item) => item.active) : [];
+            const histories = showHistoryWindows ? windows$.filter((item) => !item.active) : [];
+            const all = !(showActiveWindows || showHistoryWindows) ? windows$ : [];
 
-        const tops = showTopViewer ? [topOrigins, topPages, topUrls] : [];
-        const actives = showActiveWindows ? windows$.filter((item) => item.active) : [];
-        const histories = showHistoryWindows ? windows$.filter((item) => !item.active) : [];
-        const all = !(showActiveWindows || showHistoryWindows) ? windows$ : [];
+            const windows$1 = [...tops, ...actives, ...histories, ...all];
+            const windows$2 = await asyncMap(windows$1, async (window) => {
+                const { id, windowId = id, active = false, tabs, topHistory = false } = window;
+                const tabs$1 = topHistory ? tabs : await tabs$db.byIds([...tabs]);
+                const tabs$2 = await asyncMap(tabs$1, async (item: chrome.tabs.Tab, inx) => {
+                    if (!item) return;
+                    const favIconUrl = await getFaviconUrl(item);
+                    return { ...item, favIconUrl, inx };
+                });
 
-        const windows$1 = [...tops, ...actives, ...histories, ...all];
-        const windows$2 = await asyncMap(windows$1, async (window) => {
-            const { id, windowId = id, active = false, tabs, topHistory = false } = window;
-            const tabs$1 = topHistory ? tabs : await tabs$db.byIds([...tabs]);
-            const tabs$2 = await asyncMap(tabs$1, async (item: chrome.tabs.Tab, key) => {
-                if (!item) return;
-                const favIconUrl = await getFaviconUrl(item);
-                return { ...item, favIconUrl };
+                const current = windowId === currentWindowId;
+
+                // const tabs$3 = tabs$2.filter(Boolean);
+                // const group$1 = Object.keys(groupBy(tabs$3, 'groupId')).filter((key) => key !== '-1');
+                // const group$2 = (await tabGroups$db.byIds(group$1)).filter(Boolean);
+                // const group = toObj(group$2, 'id');
+
+                return { ...window, windowId, active, current, topHistory, tabs: tabs$2.filter(Boolean) };
             });
 
-            const tabs$3 = tabs$2.filter(Boolean);
-            const current = windowId === currentWindowId;
+            const windows$3 = orderBy(windows$2, ['topHistory', 'current', 'active'], ['desc', 'desc', 'desc']);
 
-            const group$1 = Object.keys(groupBy(tabs$3, 'groupId')).filter((key) => key !== '-1');
-            const group$2 = (await tabGroups$db.byIds(group$1)).filter(Boolean);
-            const group = toObj(group$2, 'id');
-
-            return { ...window, windowId, active, current, topHistory, group, tabs: tabs$2.filter(Boolean) };
-        });
-
-        const windows$3 = orderBy(windows$2, ['topHistory', 'current', 'active'], ['desc', 'desc', 'desc']);
-
-        console.log('windows$3 ------------------------------->>>', windows$3);
-
-        return { data: windows$3 };
+            return { data: windows$3 };
+        } catch (e) {
+            return { data: [] };
+        }
     }
 });
 
-export const windowsStore1 = selector({
-    key: 'ruyi/windows1',
+export const windowsWithGroupStore = selector({
+    key: 'ruyi/windowsWithGroupStore',
     get: async ({ get }) => {
-        get(reloadStore);
+        const { data } = get(windowsStore);
+        const windows$ = [];
+        for await (const window of data) {
+            const { tabs } = window;
+            const tabs$temp = new Map();
+            for await (const tab of tabs) {
+                const { groupId, id } = tab;
+                if (groupId === -1) {
+                    tabs$temp.set(id, tab);
+                    continue;
+                }
 
-        const { topOrigins, topPages, topUrls } = get(topHistoryStore);
-        const showHistoryWindows = get(windowSettingAtom(SettingDBKeys.TabsShowHistoryWindows));
-        const showActiveWindows = get(windowSettingAtom(SettingDBKeys.TabsShowActiveWindows));
-        const showTopViewer = get(windowSettingAtom(SettingDBKeys.TabsShowTopViewer));
+                if (tabs$temp.has(groupId)) {
+                    const group = tabs$temp.get(groupId);
+                    group.children.push(tab);
+                    tabs$temp.set(groupId, group);
+                    continue;
+                }
 
-        // 所有窗口信息
-        const all = await GetMap(WindowDB, DB.WindowDB.AllWindowTabsMap);
-        // 当前活跃的窗口
-        const actives = await GetSet(WindowDB, DB.WindowDB.ActiveWindowsSet);
-        // Window
-        const currentWindowId = await WindowDB.getItem(DB.WindowDB.CurrentId);
+                const group = (await tabGroups$db.getValue(groupId)) ?? {};
+                group.children = [tab];
+                group.groupId = groupId;
+                tabs$temp.set(groupId, group);
+            }
 
-        let windows = await asyncMap([...all.entries()], async ([windowId, tabIds]) => {
-            const tabs = await tabs$db.byIds([...tabIds], (item, key) => {
-                return item ?? { id: key };
-            });
-            const active = actives.has(windowId);
-            const current = windowId === currentWindowId;
-
-            if (!showHistoryWindows && !active) return void 0;
-            if (!showActiveWindows && active) return void 0;
-
-            return { windowId, tabs, active, current, title: current ? 'Current Window' : '' };
-        });
-
-        // 按照状态进行排序
-        windows = orderBy(windows.filter(Boolean), ['topHistory', 'current', 'active'], ['desc', 'desc', 'desc']);
-
-        if (showTopViewer) {
-            windows = [topUrls, topPages, topOrigins, ...windows];
+            window.children = [...tabs$temp.values()];
+            windows$.push(window);
         }
 
-        windows = windows.filter(({ tabs }) => !!tabs.length);
-
-        const data = await asyncMap(windows, async ({ tabs, ...rest }) => {
-            return {
-                ...rest,
-                tabs: await asyncMap(tabs, async (tab) => {
-                    const favIconUrl = await getFaviconUrl(tab);
-                    return { ...tab, favIconUrl };
-                })
-            };
-        });
-
-        return { data };
+        return { data: windows$ };
     }
 });
-
-export function tabMatcher(tab, search) {
-    return [tab.title, tab.url, tab.pendingUrl].join(',').toLowerCase().includes(search.toLowerCase());
-}
 
 export const searchByWindowsStore = selector({
     key: 'ruyi/searchByWindowsStore',
     get: async ({ get }) => {
         const search = get(windowSearchAtom);
         const onlyMatched = get(windowSettingAtom(SettingDBKeys.TabsOnlyMatched));
-        const { data } = get(windowsStore);
+        const { data } = get(windowsWithGroupStore);
 
         if (onlyMatched && search) {
             const data$ = data
-                .filter(({ tabs, ...rest }) => {
-                    if (onlyMatched && search) {
-                        const tabs$ = tabs.filter((tab) => {
-                            return tabMatcher(tab, search);
-                        });
-                        return tabs$?.length ? { ...rest, tabs: tabs$ } : void 0;
-                    }
+                .map(({ children = [], ...rest }) => {
+                    const children$ = children.filter((item) => {
+                        if (item.groupId > -1) {
+                            const children = item.children.filter((tab) => {
+                                return tabMatcher(tab, search);
+                            });
+                            return children.length ? { ...rest, children } : void 0;
+                        }
+
+                        return tabMatcher(item, search) ? { ...rest, children } : void 0;
+                    });
+
+                    return children$?.length ? { ...rest, children: children$, matched: toMap(children$, 'id') } : void 0;
                 })
                 .filter(Boolean);
 

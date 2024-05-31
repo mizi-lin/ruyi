@@ -1,3 +1,4 @@
+import { asyncDebounce } from '@root/src/shared/utils';
 export const getAppUrl = () => {
     return chrome.runtime.getURL('src/pages/app/index.html');
 };
@@ -7,7 +8,7 @@ export const getAppTabId = async () => {
     return tab?.id;
 };
 
-export const sendMsgToApp = async (type: string, options: Record<string, any> = {}) => {
+export const sendMsgToAppFunc = async (type: string, options: Record<string, any> = {}) => {
     const appTabId = await getAppTabId();
     if (appTabId) {
         try {
@@ -15,3 +16,5 @@ export const sendMsgToApp = async (type: string, options: Record<string, any> = 
         } catch (e) {}
     }
 };
+
+export const sendMsgToApp = asyncDebounce(sendMsgToAppFunc, 1000);

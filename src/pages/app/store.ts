@@ -1,8 +1,11 @@
+import { favicon } from './../../DBStore';
 import { favicons$db } from '@root/src/DBStore';
 import { SearchTemp } from '@root/src/constants';
 import { DB, GetMap, UrlDB } from '@root/src/db';
 import { countHistory, faviconURL, historyMockWindow } from '@root/src/shared/bus';
 import { orderBy } from 'lodash-es';
+import { atomFamily, selectorFamily } from 'recoil';
+import { SendTask } from './business';
 
 /**
  * 全局
@@ -114,37 +117,6 @@ export const historyOriginsStore = selector({
         return { data: result };
     }
 });
-
-/**
- * Top 10 history by url, page, origin
- */
-export const topHistoryStore = selector({
-    key: 'ruyi/history/top',
-    get: ({ get }) => {
-        const { origins, pages, data } = get(historyStore);
-        const topUrls = orderBy(data, 'visitCount', 'desc').slice(0, 10);
-        const topPages = orderBy(pages, 'visitCount', 'desc').slice(0, 10);
-        const topOrigins = orderBy(origins, 'visitCount', 'desc').slice(0, 10);
-        return {
-            topUrls: historyMockWindow(topUrls, 101, 'Top URL'),
-            topPages: historyMockWindow(topPages, 102, 'Top Pages'),
-            topOrigins: historyMockWindow(topOrigins, 103, 'Top Origins')
-        };
-    }
-});
-
-export const useDeleteHistory = () => {
-    return useRecoilCallback(({ snapshot, refresh }) => async (records: Rows) => {
-        const historiesMap: Map<string, any> = await GetMap(UrlDB, DB.UrlDB.HistoriesMap);
-        for await (const record of records) {
-            await chrome.history.deleteUrl({ url: record.url });
-            historiesMap.delete(record.url);
-        }
-
-        await UrlDB.setItem(DB.UrlDB.HistoriesMap, historiesMap);
-        refresh(historyStore);
-    });
-};
 
 /**
  * -----------

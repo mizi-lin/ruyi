@@ -33,7 +33,7 @@ export function historyMockWindow(histories: Rows, mockWindowId, title) {
     const data = histories.map((item) => {
         // @todo 有tab库里匹配
         const { url, visitCount, title } = item;
-        return { url, visitCount, title, id: Math.random() };
+        return { url, visitCount, title, id: Math.random(), groupId: -1 };
     });
 
     return { windowId: mockWindowId, tabs: data, active: false, current: false, topHistory: true, title };

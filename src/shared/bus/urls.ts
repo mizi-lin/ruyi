@@ -25,7 +25,7 @@ export async function urlsByTabUpdater(newValue: Row = {}) {
         const { visitCount, tabIds = new Set(), windowIds = new Set(), ...rest } = oldValue;
         tabIds.add(tabId);
         windowIds.add(windowId);
-        return { ...rest, tabIds, windowIds, visitCount: visitCount ?? 0 };
+        return { ...rest, tabIds, windowIds, visitCount: visitCount ?? 0, active: true };
     };
 }
 
@@ -41,7 +41,7 @@ export async function updateURLs() {
 
     const data = result.map((item) => {
         const { lastVisitTime: lastAccessed, title, url, visitCount, typedCount } = item;
-        return { lastAccessed, title, url, visitCount, typedCount };
+        return { lastAccessed, title, url, visitCount, typedCount, active: true };
     });
 
     await urls$db.updateRows(data, 'url');
@@ -122,7 +122,7 @@ export async function updateFavicons() {
         if (url && favIconUrl) {
             const { host, hostname = host } = new URL(url);
             // 每次读写避免数据读写丢失
-            await favicons$db.updateValue(hostname, faviconURL);
+            await favicons$db.updateValue(hostname, favIconUrl);
         }
     }
 }

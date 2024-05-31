@@ -50,6 +50,7 @@
         "recoil": "0.7.7",
         "recoil-nexus": "0.5.0",
         "recoil-sync": "0.2.0",
+        "tinycolor2": "^1.6.0",
         "webextension-polyfill": "0.11.0",
         "yarn": "^1.22.22"
     },
@@ -66,6 +67,7 @@
         "@types/react": "18.3.1",
         "@types/react-beautiful-dnd": "^13.1.8",
         "@types/react-dom": "18.3.0",
+        "@types/tinycolor2": "^1",
         "@types/ws": "8.5.10",
         "@typescript-eslint/eslint-plugin": "7.8.0",
         "@typescript-eslint/parser": "7.8.0",

@@ -1,11 +1,12 @@
 import { TableProps } from 'antd';
 import { toThousands } from '@root/src/shared/utils';
-import { dateRender, getFaviconUrl, highlight } from '@root/src/shared/bus';
-import { faviconStore, useDeleteHistory } from '../store';
+import { dateRender, highlight } from '@root/src/shared/bus';
+import { faviconStore } from '../store';
 import { nonFavicon } from '../RyWindow/RyWindows';
+import { useDeleteURLs } from './store';
 
 export const MultipleDeleteAction = ({ text, record }) => {
-    const remove = useDeleteHistory();
+    const remove = useDeleteURLs();
     const columns = [
         { dataIndex: 'title', title: 'Title', ellipsis: true },
         { dataIndex: 'url', title: 'URL', ellipsis: true },
@@ -15,6 +16,9 @@ export const MultipleDeleteAction = ({ text, record }) => {
     return (
         <Popconfirm
             title={'? 确认删除'}
+            placement={'left'}
+            okButtonProps={{ size: 'middle' }}
+            cancelButtonProps={{ size: 'middle' }}
             description={
                 <div style={{ maxHeight: 600, maxWidth: 800, overflow: 'scroll' }}>
                     <div style={{ padding: '16px 0' }}>
@@ -24,16 +28,16 @@ export const MultipleDeleteAction = ({ text, record }) => {
                     <HistoryBy dataSource={record?.children ?? []} columns={columns} />
                 </div>
             }
-            onConfirm={() => remove(record?.children)}
+            onConfirm={() => remove(record)}
         >
             <DeleteOutlined />
         </Popconfirm>
     );
 };
 export const DeleteAction = ({ text, record }) => {
-    const remove = useDeleteHistory();
+    const remove = useDeleteURLs();
     return (
-        <Popconfirm title={'? 确认删除'} description={'同时会删除浏览器的历史记录'} onConfirm={() => remove([record])}>
+        <Popconfirm title={'? 确认删除'} description={'同时会删除浏览器的历史记录'} onConfirm={async () => await remove(record)}>
             <DeleteOutlined />
         </Popconfirm>
     );
@@ -59,13 +63,16 @@ export const Favicon = ({ url }) => {
 
 export const baseColumns = (search, columns = []) => {
     return [
+        { dataIndex: 'url', title: '', width: 48, render: (text) => <Favicon url={text} /> },
         {
-            dataIndex: 'url',
-            title: '',
-            render: async (text) => <Favicon url={text} />
+            dataIndex: 'title',
+            title: 'Title',
+            width: 320,
+            ellipsis: true,
+            sorter: (a, b) => (a.title > b.title ? -1 : 1),
+            render: highlight(search)
         },
-        { dataIndex: 'title', title: 'Title', ellipsis: true, render: highlight(search) },
-        { dataIndex: 'url', title: 'URL', ellipsis: true, render: highlight(search) },
+        { dataIndex: 'url', title: 'URL', ellipsis: true, sorter: (a, b) => (a.url > b.url ? -1 : 1), render: highlight(search) },
         { dataIndex: 'visitCount', title: '访问次数', sorter: (a, b) => a.visitCount - b.visitCount, width: 110 },
         {
             dataIndex: 'lastAccessed',

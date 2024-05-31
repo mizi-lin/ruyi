@@ -74,8 +74,12 @@ export const getFaviconUrl = async (tab: chrome.tabs.Tab) => {
     const { id, favIconUrl, pendingUrl, url = pendingUrl } = tab;
     if (favIconUrl) return favIconUrl;
     if (!url) return;
-    const { host, hostname = host } = new URL(url);
-    const favicon = await favicons$db.getValue(url);
-    if (favicon.get(hostname)) return favicon.get(hostname);
-    return faviconURL(url);
+    try {
+        const { host, hostname = host } = new URL(url);
+        const favicon = await favicons$db.getValue(hostname);
+        return favicon ?? faviconURL(url);
+    } catch (e) {
+        const favicon = await favicons$db.getValue(url);
+        return favicon ?? faviconURL(url);
+    }
 };
