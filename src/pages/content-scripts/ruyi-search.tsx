@@ -7,6 +7,7 @@ import {
     ruyiSearchEngineStatusAtom,
     useSwitchSearchEngine
 } from './store';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 export const RuyiSearchBox = () => {
     const setRuyiSearchStatus = useSetRecoilState(ruyiSearchEngineStatusAtom);
@@ -17,6 +18,7 @@ export const RuyiSearchBox = () => {
     const setKeyword = useSetRecoilState(ruyiSearchKeywordAtom);
     const searchMaskRef = useRef(null);
     const isSearchEngine = ['google', 'baidu'].includes(currentEngine.value);
+    const inputRef = useRef(null);
 
     const switchEngine = (value) => {
         const item = options.find((item) => item.value === value);
@@ -58,7 +60,6 @@ export const RuyiSearchBox = () => {
             const maskListener = (event) => {
                 const target = event.target;
                 if (target.dataset.close === 'true') {
-                    console.log(':::--->>>o', target);
                     setRuyiSearchStatus(false);
                 }
             };
@@ -72,6 +73,15 @@ export const RuyiSearchBox = () => {
             };
         }
     }, [searchMaskRef?.current]);
+
+    useEffect(() => {
+        if (inputRef?.current) {
+            setTimeout(() => {
+                inputRef.current.focus();
+            }, 300);
+        }
+    }, [inputRef?.current]);
+
     return (
         <article className="ruyi-search" ref={searchMaskRef} data-close={true}>
             <main data-close={false}>
@@ -96,6 +106,7 @@ export const RuyiSearchBox = () => {
                 <div className={'gradient-border'}>
                     <Select
                         showSearch
+                        ref={inputRef}
                         filterOption={false}
                         placeholder={`${currentEngine?.label} - 按Tab切换搜索引擎`}
                         dropdownStyle={{ zIndex: 10000, borderRadius: 20 }}
@@ -113,6 +124,10 @@ export const RuyiSearchBox = () => {
 };
 
 export const RuyiSearch = () => {
-    const ruyiSearchStatus = useRecoilValue(ruyiSearchEngineStatusAtom);
+    const [ruyiSearchStatus, setRuyiSearchStatus] = useRecoilState(ruyiSearchEngineStatusAtom);
+
+    useHotkeys(['g'], () => setRuyiSearchStatus(!ruyiSearchStatus), [ruyiSearchStatus]);
+    useHotkeys(['esc'], () => setRuyiSearchStatus(false), []);
+
     return ruyiSearchStatus && <RuyiSearchBox />;
 };
