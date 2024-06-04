@@ -3,7 +3,7 @@ import { getTabById, getTabIdsByChromeQuery, isEmptyTab } from '@root/src/shared
 import { updateURLWithTab, updateTab } from '@root/src/shared/bus';
 import { sendMsgToApp } from './utils/bus';
 import { isNil } from 'lodash-es';
-import { tabGroups$db, tabs$db, windows$db } from '@root/src/DBStore';
+import { tabGroups$db, tabs$db, windows$db } from '@root/src/DBs';
 
 /**
  * Tab Create

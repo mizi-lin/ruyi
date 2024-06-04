@@ -6,7 +6,7 @@ import { analyzer } from 'vite-bundle-analyzer';
 import path, { resolve } from 'path';
 import { getCacheInvalidationKey, getPlugins } from './utils/vite';
 import AutoImport from 'unplugin-auto-import/vite';
-import { antdComponents, antdIcons, reactFunctions } from './auto-imports';
+import { antdComponents, antdIcons, reactFunctions, recoilFunctions } from './auto-imports';
 import { Constants } from './src/constants';
 const rootDir = resolve(__dirname);
 const srcDir = resolve(rootDir, 'src');
@@ -35,12 +35,12 @@ export default defineConfig({
         AutoImport({
             dts: path.resolve(__dirname, '../src/typings/auto-imports.d.ts'),
             imports: [
-                'recoil',
                 'react-router-dom',
                 {
                     '@ant-design/icons': antdIcons,
                     antd: antdComponents,
                     react: reactFunctions,
+                    recoil: recoilFunctions,
                     dayjs: [['default', 'dayjs']],
                     classnames: [['default', 'clx']],
                     axios: [['default', 'axios'], 'isCancel', 'AxiosError'],
@@ -53,7 +53,7 @@ export default defineConfig({
     build: {
         outDir: isProduction ? resolve(rootDir, 'build') : resolve(rootDir, 'dist'),
         /** Can slow down build speed. */
-        sourcemap: !isProduction,
+        sourcemap: isDev,
         minify: isProduction,
         modulePreload: false,
         reportCompressedSize: isProduction,
@@ -64,15 +64,14 @@ export default defineConfig({
                 app: resolve(pagesDir, 'app', 'index.html'),
                 background: resolve(pagesDir, 'background', 'index.ts'),
                 popup: resolve(pagesDir, 'popup', 'index.html'),
-                'content-script': resolve(pagesDir, 'content-script', 'index.ts')
+                'content-scripts': resolve(pagesDir, 'content-scripts', 'index.ts')
             },
             output: {
                 entryFileNames: 'src/pages/[name]/index.js',
                 chunkFileNames: isDev ? 'assets/js/[name].js' : 'assets/js/[name].[hash].js',
                 assetFileNames: (assetInfo) => {
                     const { name } = path.parse(assetInfo.name);
-                    const assetFileName = name === 'contentStyle' ? `${name}${getCacheInvalidationKey()}` : name;
-                    return `assets/[ext]/${assetFileName}.chunk.[ext]`;
+                    return `assets/[ext]/${name}.chunk.[ext]`;
                 }
                 // manualChunks: (id) => {
                 //     if (id.includes('node_modules')) {

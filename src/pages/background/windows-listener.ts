@@ -1,7 +1,7 @@
 import { MsgKey } from '@root/src/constants';
 import { WindowDB, DB } from '@root/src/db';
 import { sendMsgToApp } from './utils/bus';
-import { windows$db } from '@root/src/DBStore';
+import { windows$db } from '@root/src/DBs';
 import { pickWindow } from '@root/src/shared/bus';
 
 /**

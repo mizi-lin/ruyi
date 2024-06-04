@@ -1,11 +1,10 @@
-import { tabGroups } from './../../DBStore';
-import { isTabGroup, isTabGroupByChrome } from './../../shared/bus/tabGroups';
+import { isTabGroupByChrome } from './../../shared/bus/tabGroups';
 import { getAppUrl, sendMsgToApp } from './utils/bus';
 import { asyncMap, groupBy, insertSet, toMap } from '@root/src/shared/utils';
 import { SendTask } from '../app/business';
 import { MsgKey } from '@root/src/constants';
-import { tabGroups$db, tabs$db, windows$db, urls$db } from '@root/src/DBStore';
-import { cleanupDuplicateWindows, isActiveWindowByChrome, updateURLs } from '@root/src/shared/bus';
+import { tabGroups$db, tabs$db, windows$db, urls$db } from '@root/src/DBs';
+import { isActiveWindowByChrome } from '@root/src/shared/bus';
 import { install } from './runtime-listener';
 
 const funcMap = {
@@ -67,9 +66,13 @@ const funcMap = {
 
 chrome.runtime.onMessage.addListener(async (request, render, sendResponse) => {
     const { type, options } = request;
-    console.log('from-app-message', request);
+    const func = funcMap[type];
+
     try {
-        await funcMap[type]?.(options, sendResponse, render);
+        if (func) {
+            console.log('from-app-message', request);
+            await func(options, sendResponse, render);
+        }
     } catch (e) {
         console.trace(e);
     }

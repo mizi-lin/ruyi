@@ -1,8 +1,7 @@
-import { get, isPlainObject, update } from 'lodash-es';
+import { get, isNil, isPlainObject } from 'lodash-es';
 import { upArray } from '@root/src/shared/utils';
-import { SettingDB } from './db';
+import { DBKey } from './DBs';
 
-export type DBKey = string | number;
 export class DBStore {
     static Break = Symbol('break');
     db: LocalForage;
@@ -103,6 +102,23 @@ export class DBStore {
         }
     }
 
+    /**
+     * 值初始化
+     * 若原值存在，则保持不动，
+     * 若不存在，则写入该值
+     */
+    async initValue(key: DBKey, value: any) {
+        const value$ = await this.getValue(key);
+        if (isNil(value$)) {
+            await this.setValue(key, value);
+        }
+    }
+
+    /**
+     * 值更新
+     * value 值根据不同的值类型 覆盖或继承值
+     */
+    async updateValue(key: DBKey, value: string | number | boolean);
     async updateValue(key: DBKey, value: Map<DBKey, any>);
     async updateValue(key: DBKey, value: Set<any>);
     async updateValue(key: DBKey, value: any[]);
@@ -167,21 +183,3 @@ export class DBStore {
         await this.db.clear();
     }
 }
-
-// 存储tab标签相关信息
-export const TabsDB = localforage.createInstance({ name: 'ruyi-tabs2' });
-// 存储window窗口相关信息
-export const WindowsDB = localforage.createInstance({ name: 'ruyi-windows2' });
-// 存储group标签组
-export const TabGroupsDB = localforage.createInstance({ name: 'ruyi-tab-groups' });
-// 存储tab标签相关信息
-export const UrlsDB = localforage.createInstance({ name: 'ruyi-urls2' });
-// 存储favicon相关信息
-export const FaviconsDB = localforage.createInstance({ name: 'ruyi-favicons' });
-
-export const windows$db = new DBStore(WindowsDB, true);
-export const tabs$db = new DBStore(TabsDB, true);
-export const tabGroups$db = new DBStore(TabGroupsDB, true);
-export const urls$db = new DBStore(UrlsDB, true);
-export const favicons$db = new DBStore(FaviconsDB, true);
-export const setting$db = new DBStore(SettingDB, true);

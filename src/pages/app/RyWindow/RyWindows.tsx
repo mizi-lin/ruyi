@@ -8,7 +8,6 @@ import {
     useOpenTab,
     useOpenWindow,
     useRemoveWindow,
-    windowsStore,
     windowSearchAtom,
     searchByWindowsStore,
     tabMatcher,
@@ -145,7 +144,8 @@ export const DraggableGroupItem = ({ group, window, inx }) => {
     const { contents: matched } = useRecoilValueLoadable(searchByWindowsStore);
     if (!group.children?.length) return <></>;
 
-    const isMatched = onlyMatched ? matched?.get?.(window.id)?.matched?.has?.(group.id) : true;
+    // 搜索匹配
+    const isMatched = onlyMatched ? matched?.get?.(window.id)?.matched?.has?.(group.id) ?? true : true;
 
     if (!isMatched) return <></>;
 

@@ -4,7 +4,7 @@ import { orderBy } from 'lodash-es';
 import { reloadStore } from '../store';
 import { toMap } from '@root/src/shared/utils';
 import { asyncMap } from '@root/src/shared/utils/common';
-import { tabGroups$db, tabs$db, windows$db } from '@root/src/DBStore';
+import { tabGroups$db, tabs$db, windows$db } from '@root/src/DBs';
 import { atomFamily } from 'recoil';
 import { topHistoryStore } from '../RyHistory/store';
 

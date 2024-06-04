@@ -70,7 +70,7 @@ const manifest = {
     content_scripts: [
         {
             matches: ['http://*/*', 'https://*/*', '<all_urls>'],
-            js: ['src/pages/content-script/index.js']
+            js: ['src/pages/content-scripts/index.js']
         }
     ],
     web_accessible_resources: [

@@ -1,6 +1,3 @@
-import { tabGroups$db } from './DBStore';
-import { isEmptyTab } from './shared/bus/tabs';
-
 // 存储URL相关信息
 export const UrlDB = localforage.createInstance({ name: 'ruyi-urls' });
 // 存储tabs相关信息
@@ -60,29 +57,8 @@ export async function UpdateMap(db, storeKey, mapKey, updater) {
     return map;
 }
 
-export async function RemoveMap(db, storeKey, mapKey) {
-    const map = await GetMap(db, storeKey);
-    map.delete(mapKey);
-    await db.setItem(storeKey, map);
-}
-
 export async function GetSet(db, storeKey): Promise<Set<any>> {
     return (await db.getItem(storeKey)) || new Set();
-}
-
-export async function UpdateSet(db, storeKey, value) {
-    const set = await GetSet(db, storeKey);
-    // 修正set顺序
-    set.delete(value);
-    set.add(value);
-    await db.setItem(storeKey, set);
-    return set;
-}
-
-export async function RemoveSet(db, storeKey, value) {
-    const set = await GetSet(db, storeKey);
-    set.delete(value);
-    await db.setItem(storeKey, set);
 }
 
 export const DB = {
@@ -130,5 +106,9 @@ export enum SettingDBKeys {
     // tabs 显示历史窗口
     TabsShowHistoryWindows = 'ruyi.show.inactive.windows',
     // tabs 显示浏览记录
-    TabsShowTopViewer = 'ruyi.tabs.show.top.viewer'
+    TabsShowTopViewer = 'ruyi.tabs.show.top.viewer',
+    // RuyiSearch
+    RuyiSearchEngines = 'ruyi.constants.search.engines',
+    // last search engine
+    RuyiSearchCurrentEngine = 'ruyi.constants.search.engine.current'
 }

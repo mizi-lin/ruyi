@@ -1,7 +1,8 @@
-import { DB, GetMap, WindowDB, GetSet, RemoveMap } from '@root/src/db';
-import { getKeyByTabIds, getTabsWithoutEmpty } from './tabs';
-import { groupBy, toMap } from '../utils';
-import { DBStore, tabs$db, windows$db } from '@root/src/DBStore';
+import { DB, WindowDB } from '@root/src/db';
+import { getKeyByTabIds } from './tabs';
+import { toMap } from '../utils';
+import { windows$db } from '@root/src/DBs';
+import { DBStore } from '@root/src/DBStore';
 
 export function pickWindow(window: chrome.windows.Window) {
     const { id, incognito, type } = window;

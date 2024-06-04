@@ -1,4 +1,4 @@
-import { tabGroups$db, tabs$db } from '@root/src/DBStore';
+import { tabGroups$db, tabs$db } from '@root/src/DBs';
 import { toMap } from '../utils';
 
 export const isTabGroup = async (tabGroupId) => {

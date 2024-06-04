@@ -1,11 +1,9 @@
-import { favicon } from './../../DBStore';
-import { favicons$db } from '@root/src/DBStore';
+import { favicons$db } from '@root/src/DBs';
 import { SearchTemp } from '@root/src/constants';
 import { DB, GetMap, UrlDB } from '@root/src/db';
-import { countHistory, faviconURL, historyMockWindow } from '@root/src/shared/bus';
+import { countHistory, faviconURL } from '@root/src/shared/bus';
 import { orderBy } from 'lodash-es';
-import { atomFamily, selectorFamily } from 'recoil';
-import { SendTask } from './business';
+import { atom, atomFamily, selectorFamily, selector } from 'recoil';
 
 /**
  * 全局

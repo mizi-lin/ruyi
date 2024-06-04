@@ -1,6 +1,6 @@
 import { DB, GetMap, UrlDB } from '@root/src/db';
 import { faviconURL } from './common';
-import { favicons$db, tabs$db, type DBKey } from '@root/src/DBStore';
+import { favicons$db, tabs$db, type DBKey } from '@root/src/DBs';
 import { get } from 'lodash-es';
 
 /**

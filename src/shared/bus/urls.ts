@@ -3,7 +3,7 @@ import { DB, GetMap, GetSet, UpdateMap, UrlDB } from '@root/src/db';
 import * as cheerio from 'cheerio';
 import { sleep } from '../utils/common';
 import { toMap } from '../utils';
-import { favicons$db, tabs$db, urls$db } from '@root/src/DBStore';
+import { favicons$db, tabs$db, urls$db } from '@root/src/DBs';
 import { faviconURL } from './common';
 
 export type URLInfo = {

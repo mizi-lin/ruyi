@@ -1,4 +1,4 @@
-import { tabGroups$db, tabs$db } from '@root/src/DBStore';
+import { tabGroups$db, tabs$db } from '@root/src/DBs';
 import { orderBy } from 'lodash-es';
 import { reloadStore } from '../store';
 import { asyncMap } from '@root/src/shared/utils';

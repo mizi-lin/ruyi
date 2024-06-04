@@ -1,3 +1,4 @@
+import { DBKey } from '../../DBs';
 import { get, isNumber } from 'lodash-es';
 import { likeDecimal, likeEntities } from './numbers';
 
@@ -20,6 +21,14 @@ export function toObj(arr: Rows, key: string) {
         // 返回更新后的对象
         return temp;
     }, {});
+}
+
+export function mapToObj(map: Map<DBKey, any>) {
+    let obj = {};
+    map.forEach((value, key) => {
+        obj[key] = value;
+    });
+    return obj;
 }
 
 /**

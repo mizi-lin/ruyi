@@ -1,4 +1,4 @@
-import { tabGroups$db } from '@root/src/DBStore';
+import { tabGroups$db } from '@root/src/DBs';
 import { sendMsgToApp } from './utils/bus';
 import { MsgKey } from '@root/src/constants';
 import { cleanupDuplicateTabGroups } from '@root/src/shared/bus';
